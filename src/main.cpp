@@ -43,6 +43,18 @@ int main(int argc, char *argv[]) {
         case '}':
           std::cout << "RIGHT_BRACE } null" << std::endl;
           break;
+        case '*':
+          std::cout << "STAR * null" << std::endl;
+          break;
+        case '.':
+          std::cout << "DOT . null" << std::endl;
+          break;
+        case ',':
+          std::cout << "COMMA , null" << std::endl;
+          break;
+        case '+':
+          std::cout << "PLUS + null" << std::endl;
+          break;
         default:
           std::cout << "EOF  null" << std::endl;
           break;

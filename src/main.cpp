@@ -30,10 +30,16 @@ int main(int argc, char *argv[]) {
       return 0;
     }
     for (char c : file_contents) {
-      if (c == '(') {
-        std::cout << "LEFT_PAREN ( null" << std::endl;
-      } else if (c == ')') {
-        std::cout << "RIGHT_PAREN ) null" << std::endl;
+      switch (c) {
+        case '(':
+          std::cout << "LEFT_PAREN ( null" << std::endl;
+          break;
+        case ')':
+          std::cout << "RIGHT_PAREN ) null" << std::endl;
+          break;
+        default:
+          std::cout << "EOF  null" << std::endl;
+          break;
       }
     }
   } else {

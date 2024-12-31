@@ -7,6 +7,7 @@
 std::string read_file_contents(const std::string &filename);
 
 int main(int argc, char *argv[]) {
+  int ret_val = 0;
   // Disable output buffering
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
@@ -62,17 +63,18 @@ int main(int argc, char *argv[]) {
           std::cout << "SEMICOLON ; null" << std::endl;
           break;
         default:
-          std::cout << "Error: Unexpected character: " << c << std::endl;
-          return 65;
+          std::cerr << "[line 1] Error: Unexpected character: " << c
+                    << std::endl;
+          ret_val = 65;
           break;
       }
     }
     std::cout << "EOF  null" << std::endl;
   } else {
     std::cerr << "Unknown command: " << command << std::endl;
-    return 1;
+    ret_val = 1;
   }
-  return 0;
+  return ret_val;
 }
 
 std::string read_file_contents(const std::string &filename) {

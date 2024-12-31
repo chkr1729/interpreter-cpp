@@ -55,6 +55,9 @@ int main(int argc, char *argv[]) {
         case '+':
           std::cout << "PLUS + null" << std::endl;
           break;
+        case '-':
+          std::cout << "MINUS - null" << std::endl;
+          break;
         default:
           std::cout << "EOF  null" << std::endl;
           break;

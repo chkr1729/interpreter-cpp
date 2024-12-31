@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
           break;
         default:
           std::cout << "Error: Unexpected character: " << c << std::endl;
+          return 65;
           break;
       }
     }

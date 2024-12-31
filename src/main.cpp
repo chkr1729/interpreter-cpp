@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
           std::cout << "MINUS - null" << std::endl;
           break;
         case ':':
-          std::cout << "SEMICOLON : null" << std::endl;
+          std::cout << "SEMICOLON ; null" << std::endl;
           break;
         default:
           std::cout << "EOF  null" << std::endl;

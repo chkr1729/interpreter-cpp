@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
           std::cout << "SEMICOLON ; null" << std::endl;
           break;
         default:
-          std::cout << "EOF  null" << std::endl;
+          std::cout << "Error: Unexpected character: " << c << std::endl;
           break;
       }
     }

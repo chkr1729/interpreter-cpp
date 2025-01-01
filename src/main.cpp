@@ -75,7 +75,8 @@ void processFileContents(const std::string& file_contents, int& ret_val)
                                                              {'=', "EQUAL = null"},
                                                              {'!', "BANG ! null"},
                                                              {'<', "LESS < null"},
-                                                             {'>', "GREATER > null"}};
+                                                             {'>', "GREATER > null"},
+                                                             {'/', "SLASH / null"}};
 
     // Define the lookup table for multi-character tokens
     const std::unordered_map<std::string, std::string> multi_token_map = {
@@ -93,7 +94,11 @@ void processFileContents(const std::string& file_contents, int& ret_val)
         if (i + 1 < file_contents.size())
         {
             std::string multi_token = std::string(1, c) + file_contents[i + 1];
-            auto        multi_it    = multi_token_map.find(multi_token);
+            if (multi_token == "//")
+            {
+                break;
+            }
+            auto multi_it = multi_token_map.find(multi_token);
             if (multi_it != multi_token_map.end())
             {
                 std::cout << multi_it->second << std::endl;

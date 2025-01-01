@@ -90,6 +90,12 @@ void processFileContents(const std::string& file_contents, int& ret_val)
     {
         char c = file_contents[i];
 
+        if (c == ' ' || c == '\t' || c == '\n')
+        {
+            i++;
+            continue;
+        }
+
         // Handle multi-character tokens
         if (i + 1 < file_contents.size())
         {

@@ -71,43 +71,38 @@ void processFileContents(const std::string& file_contents, int& ret_val)
                                                              {',', "COMMA , null"},
                                                              {'+', "PLUS + null"},
                                                              {'-', "MINUS - null"},
-                                                             {';', "SEMICOLON ; null"}};
+                                                             {';', "SEMICOLON ; null"},
+                                                             {'=', "EQUAL = null"},
+                                                             {'!', "BANG ! null"},
+                                                             {'<', "LESS < null"},
+                                                             {'>', "GREATER > null"}};
 
-    // Function to handle multi-character tokens
-    auto handleMultiCharToken = [&](char               current,
-                                    char               next,
-                                    const std::string& single,
-                                    const std::string& multi,
-                                    int&               index) {
-        if (index + 1 < file_contents.size() && file_contents[index + 1] == next)
-        {
-            std::cout << multi << std::endl;
-            index += 2;  // Skip both characters
-        }
-        else
-        {
-            std::cout << single << std::endl;
-            index++;
-        }
-    };
+    // Define the lookup table for multi-character tokens
+    const std::unordered_map<std::string, std::string> multi_token_map = {
+        {"==", "EQUAL_EQUAL == null"},
+        {"!=", "BANG_EQUAL != null"},
+        {"<=", "LESS_EQUAL <= null"},
+        {">=", "GREATER_EQUAL >= null"}};
 
     int i = 0;
     while (i < file_contents.size())
     {
         char c = file_contents[i];
 
-        if (c == '=')
+        // Handle multi-character tokens
+        if (i + 1 < file_contents.size())
         {
-            handleMultiCharToken('=', '=', "EQUAL = null", "EQUAL_EQUAL == null", i);
-            continue;
-        }
-        else if (c == '!')
-        {
-            handleMultiCharToken('!', '=', "BANG ! null", "BANG_EQUAL != null", i);
-            continue;
+            std::string multi_token = std::string(1, c) + file_contents[i + 1];
+            auto        multi_it    = multi_token_map.find(multi_token);
+            if (multi_it != multi_token_map.end())
+            {
+                std::cout << multi_it->second << std::endl;
+                i += 2;  // Skip the multi-character token
+                continue;
+            }
         }
 
-        // Check if the character is in the token map
+        // Handle single-character tokens
         auto it = token_map.find(c);
         if (it != token_map.end())
         {

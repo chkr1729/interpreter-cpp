@@ -23,57 +23,56 @@ int main(int argc, char *argv[]) {
 
   const std::string command = argv[1];
 
-  if (command == "tokenize") {
-    std::string file_contents = read_file_contents(argv[2]);
-    if (file_contents.empty()) {
-      std::cout << "EOF  null"
-                << std::endl;  // Placeholder, remove this line when
-      return 0;
-    }
-    for (char c : file_contents) {
-      switch (c) {
-        case '(':
-          std::cout << "LEFT_PAREN ( null" << std::endl;
-          break;
-        case ')':
-          std::cout << "RIGHT_PAREN ) null" << std::endl;
-          break;
-        case '{':
-          std::cout << "LEFT_BRACE { null" << std::endl;
-          break;
-        case '}':
-          std::cout << "RIGHT_BRACE } null" << std::endl;
-          break;
-        case '*':
-          std::cout << "STAR * null" << std::endl;
-          break;
-        case '.':
-          std::cout << "DOT . null" << std::endl;
-          break;
-        case ',':
-          std::cout << "COMMA , null" << std::endl;
-          break;
-        case '+':
-          std::cout << "PLUS + null" << std::endl;
-          break;
-        case '-':
-          std::cout << "MINUS - null" << std::endl;
-          break;
-        case ';':
-          std::cout << "SEMICOLON ; null" << std::endl;
-          break;
-        default:
-          std::cerr << "[line 1] Error: Unexpected character: " << c
-                    << std::endl;
-          ret_val = 65;
-          break;
-      }
-    }
-    std::cout << "EOF  null" << std::endl;
-  } else {
+  if (command != "tokenize") {
     std::cerr << "Unknown command: " << command << std::endl;
-    ret_val = 1;
+    return 1;
   }
+
+  std::string file_contents = read_file_contents(argv[2]);
+  if (file_contents.empty()) {
+    std::cout << "EOF  null"
+              << std::endl;  // Placeholder, remove this line when
+    return 0;
+  }
+  for (char c : file_contents) {
+    switch (c) {
+      case '(':
+        std::cout << "LEFT_PAREN ( null" << std::endl;
+        break;
+      case ')':
+        std::cout << "RIGHT_PAREN ) null" << std::endl;
+        break;
+      case '{':
+        std::cout << "LEFT_BRACE { null" << std::endl;
+        break;
+      case '}':
+        std::cout << "RIGHT_BRACE } null" << std::endl;
+        break;
+      case '*':
+        std::cout << "STAR * null" << std::endl;
+        break;
+      case '.':
+        std::cout << "DOT . null" << std::endl;
+        break;
+      case ',':
+        std::cout << "COMMA , null" << std::endl;
+        break;
+      case '+':
+        std::cout << "PLUS + null" << std::endl;
+        break;
+      case '-':
+        std::cout << "MINUS - null" << std::endl;
+        break;
+      case ';':
+        std::cout << "SEMICOLON ; null" << std::endl;
+        break;
+      default:
+        std::cerr << "[line 1] Error: Unexpected character: " << c << std::endl;
+        ret_val = 65;
+        break;
+    }
+  }
+  std::cout << "EOF  null" << std::endl;
   return ret_val;
 }
 

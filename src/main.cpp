@@ -30,44 +30,65 @@ int main(int argc, char *argv[]) {
 
   std::string file_contents = read_file_contents(argv[2]);
   if (file_contents.empty()) {
-    std::cout << "EOF  null"
-              << std::endl;  // Placeholder, remove this line when
+    std::cout << "EOF  null" << std::endl;
     return 0;
   }
-  for (char c : file_contents) {
+  int i = 0;
+  while (i < file_contents.size()) {
+    char c = file_contents[i];
     switch (c) {
       case '(':
         std::cout << "LEFT_PAREN ( null" << std::endl;
+        i++;
         break;
       case ')':
         std::cout << "RIGHT_PAREN ) null" << std::endl;
+        i++;
         break;
       case '{':
         std::cout << "LEFT_BRACE { null" << std::endl;
+        i++;
         break;
       case '}':
         std::cout << "RIGHT_BRACE } null" << std::endl;
+        i++;
         break;
       case '*':
         std::cout << "STAR * null" << std::endl;
+        i++;
         break;
       case '.':
         std::cout << "DOT . null" << std::endl;
+        i++;
         break;
       case ',':
         std::cout << "COMMA , null" << std::endl;
+        i++;
         break;
       case '+':
         std::cout << "PLUS + null" << std::endl;
+        i++;
         break;
       case '-':
         std::cout << "MINUS - null" << std::endl;
+        i++;
         break;
       case ';':
         std::cout << "SEMICOLON ; null" << std::endl;
+        i++;
+        break;
+      case '=':
+        if (i == file_contents.size() - 1 || file_contents[i + 1] != '=') {
+          std::cout << "EQUAL = null" << std::endl;
+          i++;
+        } else {
+          std::cout << "EQUAL_EQUAL == null" << std::endl;
+          i += 2;
+        }
         break;
       default:
         std::cerr << "[line 1] Error: Unexpected character: " << c << std::endl;
+        i++;
         ret_val = 65;
         break;
     }

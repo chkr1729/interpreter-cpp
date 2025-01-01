@@ -73,24 +73,37 @@ void processFileContents(const std::string& file_contents, int& ret_val)
                                                              {'-', "MINUS - null"},
                                                              {';', "SEMICOLON ; null"}};
 
+    // Function to handle multi-character tokens
+    auto handleMultiCharToken = [&](char               current,
+                                    char               next,
+                                    const std::string& single,
+                                    const std::string& multi,
+                                    int&               index) {
+        if (index + 1 < file_contents.size() && file_contents[index + 1] == next)
+        {
+            std::cout << multi << std::endl;
+            index += 2;  // Skip both characters
+        }
+        else
+        {
+            std::cout << single << std::endl;
+            index++;
+        }
+    };
+
     int i = 0;
     while (i < file_contents.size())
     {
         char c = file_contents[i];
 
-        // Handle multi-character tokens (e.g., = and ==)
         if (c == '=')
         {
-            if (i + 1 < file_contents.size() && file_contents[i + 1] == '=')
-            {
-                std::cout << "EQUAL_EQUAL == null" << std::endl;
-                i += 2;  // Skip both '=' characters
-            }
-            else
-            {
-                std::cout << "EQUAL = null" << std::endl;
-                i++;
-            }
+            handleMultiCharToken('=', '=', "EQUAL = null", "EQUAL_EQUAL == null", i);
+            continue;
+        }
+        else if (c == '!')
+        {
+            handleMultiCharToken('!', '=', "BANG ! null", "BANG_EQUAL != null", i);
             continue;
         }
 

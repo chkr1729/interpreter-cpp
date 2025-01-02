@@ -42,7 +42,7 @@ class TokenProcessor
     std::string fileContents;
 
     // Helper functions
-    void handleWhitespaceAndNewlines();
+    bool handleWhitespaceAndNewlines();
     bool handleComment();
     bool handleMultiCharToken();
     bool handleSingleCharToken();

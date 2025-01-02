@@ -17,14 +17,19 @@ TokenProcessor::TokenProcessor(const std::string& fileName)
 }
 
 // Handle whitespace and newlines
-void TokenProcessor::handleWhitespaceAndNewlines()
+bool TokenProcessor::handleWhitespaceAndNewlines()
 {
     char c = fileContents[index];
+    if (c != ' ' && c != '\t' && c != '\n')
+    {
+        return false;
+    }
+    index++;
     if (c == '\n')
     {
         lineNum++;
     }
-    index++;
+    return true;
 }
 
 // Handle single-line comments (//)
@@ -119,14 +124,10 @@ void TokenProcessor::process()
 {
     while (index < fileContents.size())
     {
-        char c = fileContents[index];
-
-        if (c == ' ' || c == '\t' || c == '\n')
+        if (handleWhitespaceAndNewlines())
         {
-            handleWhitespaceAndNewlines();
             continue;
         }
-
         if (handleComment())
         {
             continue;

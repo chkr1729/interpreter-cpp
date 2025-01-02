@@ -117,31 +117,73 @@ void TokenProcessor::processSingleCharToken()
 
 void TokenProcessor::processStringLiteral()
 {
-    curLexeme += fileContents[index];
-    int endIndex = index + 1;
-    while (endIndex < fileContents.size() && fileContents[endIndex] != '"' &&
-           fileContents[endIndex] != '\n')
+    auto reportError = [&](const std::string& message) {
+        std::cerr << "[line " << lineNum << "] Error: " << message << std::endl;
+        retVal = 65;
+    };
+
+    curLexeme += fileContents[index];  // Add the starting quote
+    size_t startIndex = index + 1;
+
+    // Find the position of the next '"' or '\n'
+    size_t endIndex = fileContents.find_first_of("\"\n", startIndex);
+
+    if (endIndex == std::string::npos)
     {
-        curLexeme += fileContents[endIndex++];
+        // No closing '"' or newline found
+        reportError("Unterminated string.");
+        index = fileContents.size();  // Move to the end of file
+        return;
     }
-    const char c = fileContents[endIndex];
-    curLexeme += c;
-    index = endIndex + 1;
+
+    // Add characters between the opening and closing delimiters
+    curLexeme += fileContents.substr(startIndex, endIndex - startIndex);
+
+    char c = fileContents[endIndex];  // The delimiter character found
+    curLexeme += c;                   // Add the closing '"' or newline
+    index = endIndex + 1;             // Move past the delimiter
+
     if (c == '"')
     {
+        // Properly terminated string
         std::cout << "STRING " << curLexeme << " " << curLexeme.substr(1, curLexeme.size() - 2)
                   << std::endl;
     }
-    else
+    else if (c == '\n')
     {
-        std::cerr << "[line " << lineNum << "] Error: Unterminated string." << std::endl;
-        retVal = 65;
-    }
-    if (c == '\n')
-    {
-        lineNum++;
+        // Unterminated string ends with a newline
+        reportError("Unterminated string.");
+        lineNum++;  // Increment line number
     }
 }
+
+// void TokenProcessor::processStringLiteral()
+// {
+//     curLexeme += fileContents[index];
+//     int endIndex = index + 1;
+//     while (endIndex < fileContents.size() && fileContents[endIndex] != '"' &&
+//            fileContents[endIndex] != '\n')
+//     {
+//         curLexeme += fileContents[endIndex++];
+//     }
+//     const char c = fileContents[endIndex];
+//     curLexeme += c;
+//     index = endIndex + 1;
+//     if (c == '"')
+//     {
+//         std::cout << "STRING " << curLexeme << " " << curLexeme.substr(1, curLexeme.size() - 2)
+//                   << std::endl;
+//     }
+//     else
+//     {
+//         std::cerr << "[line " << lineNum << "] Error: Unterminated string." << std::endl;
+//         retVal = 65;
+//     }
+//     if (c == '\n')
+//     {
+//         lineNum++;
+//     }
+// }
 
 void TokenProcessor::removeTrailingZeros(std::string& str)
 {

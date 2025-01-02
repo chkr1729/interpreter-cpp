@@ -85,13 +85,20 @@ void processFileContents(const std::string& file_contents, int& ret_val)
         {"<=", "LESS_EQUAL <= null"},
         {">=", "GREATER_EQUAL >= null"}};
 
-    int i = 0;
+    int i       = 0;
+    int lineNum = 1;
     while (i < file_contents.size())
     {
         char c = file_contents[i];
 
-        if (c == ' ' || c == '\t' || c == '\n')
+        if (c == ' ' || c == '\t')
         {
+            i++;
+            continue;
+        }
+        else if (c == '\n')
+        {
+            lineNum++;
             i++;
             continue;
         }
@@ -102,7 +109,17 @@ void processFileContents(const std::string& file_contents, int& ret_val)
             std::string multi_token = std::string(1, c) + file_contents[i + 1];
             if (multi_token == "//")
             {
-                break;
+                while (i < file_contents.size())
+                {
+                    c = file_contents[i];
+                    i++;
+                    if (c == '\n')
+                    {
+                        lineNum++;
+                        break;
+                    }
+                }
+                continue;
             }
             auto multi_it = multi_token_map.find(multi_token);
             if (multi_it != multi_token_map.end())
@@ -122,7 +139,7 @@ void processFileContents(const std::string& file_contents, int& ret_val)
         else
         {
             // Handle unexpected characters
-            std::cerr << "[line 1] Error: Unexpected character: " << c << std::endl;
+            std::cerr << "[line " << lineNum << "] Error: Unexpected character: " << c << std::endl;
             ret_val = 65;
         }
 

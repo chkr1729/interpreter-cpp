@@ -110,6 +110,36 @@ bool TokenProcessor::handleStringLiteral()
     return true;
 }
 
+bool TokenProcessor::handleNumberLiteral()
+{
+    if (!std::isdigit(fileContents[index]))
+    {
+        return false;
+    }
+    std::string beforeDecimalStr, afterDecimalStr;
+    while (std::isdigit(fileContents[index]))
+    {
+        beforeDecimalStr += fileContents[index++];
+    }
+    std::string numStr = beforeDecimalStr;
+    if (fileContents[index] == '.')
+    {
+        numStr += fileContents[index++];
+        while (std::isdigit(fileContents[index]))
+        {
+            afterDecimalStr += fileContents[index++];
+        }
+        numStr += afterDecimalStr;
+    }
+    if (afterDecimalStr.empty())
+    {
+        afterDecimalStr = "0";
+    }
+    std::cout << "NUMBER " << numStr << " " << beforeDecimalStr << "." << std::stof(afterDecimalStr)
+              << std::endl;
+    return true;
+}
+
 // Handle unexpected characters
 void TokenProcessor::handleUnexpectedChar()
 {
@@ -124,23 +154,9 @@ void TokenProcessor::process()
 {
     while (index < fileContents.size())
     {
-        if (handleWhitespaceAndNewlines())
-        {
-            continue;
-        }
-        if (handleComment())
-        {
-            continue;
-        }
-        if (handleMultiCharToken())
-        {
-            continue;
-        }
-        if (handleSingleCharToken())
-        {
-            continue;
-        }
-        if (handleStringLiteral())
+        // The order is important -  handleMultiCharToken should come before handleSingleCharToken
+        if (handleWhitespaceAndNewlines() || handleComment() || handleMultiCharToken() ||
+            handleSingleCharToken() || handleStringLiteral() || handleNumberLiteral())
         {
             continue;
         }

@@ -48,6 +48,7 @@ class TokenProcessor
     bool handleSingleCharToken();
     void handleUnexpectedChar();
     bool handleStringLiteral();
+    bool handleNumberLiteral();
 
    public:
     // Constructor

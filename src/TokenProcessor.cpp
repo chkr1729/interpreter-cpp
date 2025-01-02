@@ -66,8 +66,8 @@ void TokenProcessor::handleMultiCharToken()
         return;
     }
     std::string multiToken = std::string(1, fileContents[index]) + fileContents[index + 1];
-    auto        it         = multi_token_map.find(multiToken);
-    if (it == multi_token_map.end())
+    auto        it         = multiTokenMap.find(multiToken);
+    if (it == multiTokenMap.end())
     {
         return;
     }
@@ -83,8 +83,8 @@ void TokenProcessor::handleSingleCharToken()
     {
         return;
     }
-    auto it = token_map.find(fileContents[index]);
-    if (it == token_map.end())
+    auto it = tokenMap.find(fileContents[index]);
+    if (it == tokenMap.end())
     {
         return;
     }

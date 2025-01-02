@@ -12,23 +12,24 @@ class TokenProcessor
 {
    private:
     // Token maps
-    const std::unordered_map<char, std::string> tokenMap = {{'(', "LEFT_PAREN ( null"},
-                                                            {')', "RIGHT_PAREN ) null"},
-                                                            {'{', "LEFT_BRACE { null"},
-                                                            {'}', "RIGHT_BRACE } null"},
-                                                            {'*', "STAR * null"},
-                                                            {'.', "DOT . null"},
-                                                            {',', "COMMA , null"},
-                                                            {'+', "PLUS + null"},
-                                                            {'-', "MINUS - null"},
-                                                            {';', "SEMICOLON ; null"},
-                                                            {'=', "EQUAL = null"},
-                                                            {'!', "BANG ! null"},
-                                                            {'<', "LESS < null"},
-                                                            {'>', "GREATER > null"},
-                                                            {'/', "SLASH / null"}};
+    inline static const std::unordered_map<char, std::string> tokenMap = {
+        {'(', "LEFT_PAREN ( null"},
+        {')', "RIGHT_PAREN ) null"},
+        {'{', "LEFT_BRACE { null"},
+        {'}', "RIGHT_BRACE } null"},
+        {'*', "STAR * null"},
+        {'.', "DOT . null"},
+        {',', "COMMA , null"},
+        {'+', "PLUS + null"},
+        {'-', "MINUS - null"},
+        {';', "SEMICOLON ; null"},
+        {'=', "EQUAL = null"},
+        {'!', "BANG ! null"},
+        {'<', "LESS < null"},
+        {'>', "GREATER > null"},
+        {'/', "SLASH / null"}};
 
-    const std::unordered_map<std::string, std::string> multiTokenMap = {
+    inline static const std::unordered_map<std::string, std::string> multiTokenMap = {
         {"==", "EQUAL_EQUAL == null"},
         {"!=", "BANG_EQUAL != null"},
         {"<=", "LESS_EQUAL <= null"},

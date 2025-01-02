@@ -46,7 +46,8 @@ class TokenProcessor
     // Helper functions
     bool canProcess() const;
 
-    void resetLexeme();
+    void        resetLexeme();
+    static void removeTrailingZeros(std::string& str);
 
     void handleWhitespaceAndNewlines();
     void handleComment();

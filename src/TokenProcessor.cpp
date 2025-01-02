@@ -1,6 +1,7 @@
 #include "TokenProcessor.h"
 
 #include <cctype>
+#include <regex>
 
 TokenProcessor::TokenProcessor(const std::string& fileName)
 {
@@ -124,33 +125,45 @@ void TokenProcessor::handleStringLiteral()
     }
 }
 
+void TokenProcessor::removeTrailingZeros(std::string& str)
+{
+    str = std::regex_replace(str, std::regex("\\.?0+$"), "");
+}
+
 void TokenProcessor::handleNumberLiteral()
 {
     if (!canProcess() || !std::isdigit(fileContents[index]))
     {
         return;
     }
-    std::string beforeDecimalStr, afterDecimalStr;
-    while (std::isdigit(fileContents[index]))
-    {
-        beforeDecimalStr += fileContents[index++];
-    }
-    curLexeme = beforeDecimalStr;
-    if (fileContents[index] == '.')
-    {
-        curLexeme += fileContents[index++];
+    // Lambda function to collect digits
+    auto collectDigits = [&](std::string& target) {
         while (std::isdigit(fileContents[index]))
         {
-            afterDecimalStr += fileContents[index++];
+            target += fileContents[index++];
         }
+    };
+
+    std::string beforeDecimalStr, afterDecimalStr;
+
+    // Collect digits before the decimal point
+    collectDigits(beforeDecimalStr);
+    curLexeme = beforeDecimalStr;
+
+    // Handle the decimal point and digits after it
+    if (fileContents[index] == '.')
+    {
+        curLexeme += fileContents[index++];  // Append the decimal point
+        collectDigits(afterDecimalStr);      // Collect digits after the decimal point
         curLexeme += afterDecimalStr;
     }
+    removeTrailingZeros(afterDecimalStr);
     if (afterDecimalStr.empty())
     {
         afterDecimalStr = "0";
     }
-    std::cout << "NUMBER " << curLexeme << " " << beforeDecimalStr << "."
-              << std::stof(afterDecimalStr) << std::endl;
+    std::cout << "NUMBER " << curLexeme << " " << beforeDecimalStr << "." << afterDecimalStr
+              << std::endl;
 }
 
 void TokenProcessor::handleIdentifier()

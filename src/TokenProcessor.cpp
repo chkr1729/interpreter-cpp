@@ -50,7 +50,6 @@ bool TokenProcessor::handleMultiCharToken()
     {
         return false;
     }
-
     std::string multi_token = std::string(1, fileContents[index]) + fileContents[index + 1];
     auto        it          = multi_token_map.find(multi_token);
     if (it != multi_token_map.end())
@@ -74,6 +73,36 @@ bool TokenProcessor::handleSingleCharToken()
         return true;
     }
     return false;
+}
+
+bool TokenProcessor::handleStringLiteral()
+{
+    if (fileContents[index] != '"')
+    {
+        return false;
+    }
+    int endIndex = index + 1;
+    while (endIndex < fileContents.size() && fileContents[endIndex] != '"' &&
+           fileContents[endIndex] != '\n')
+    {
+        endIndex++;
+    }
+    if (fileContents[endIndex] == '"')
+    {
+        const std::string literal = fileContents.substr(index + 1, endIndex - index - 1);
+        std::cout << "STRING " << "\"" << literal << "\" " << literal << std::endl;
+    }
+    else
+    {
+        std::cerr << "[line " << lineNum << "] Error: Unterminated string." << std::endl;
+        retVal = 65;
+    }
+    if (fileContents[endIndex] == '\n')
+    {
+        lineNum++;
+    }
+    index = endIndex + 1;
+    return true;
 }
 
 // Handle unexpected characters
@@ -107,6 +136,10 @@ void TokenProcessor::process()
             continue;
         }
         if (handleSingleCharToken())
+        {
+            continue;
+        }
+        if (handleStringLiteral())
         {
             continue;
         }

@@ -18,155 +18,172 @@ TokenProcessor::TokenProcessor(const std::string& fileName)
     fileContents = buffer.str();
 }
 
-// Handle whitespace and newlines
-bool TokenProcessor::handleWhitespaceAndNewlines()
+bool TokenProcessor::canProcess() const
 {
+    return curLexeme.empty();
+}
+
+// Handle whitespace and newlines
+void TokenProcessor::handleWhitespaceAndNewlines()
+{
+    if (!canProcess())
+    {
+        return;
+    }
     char c = fileContents[index];
     if (c != ' ' && c != '\t' && c != '\n')
     {
-        return false;
+        return;
     }
+    curLexeme = c;
     index++;
     if (c == '\n')
     {
         lineNum++;
     }
-    return true;
 }
 
 // Handle single-line comments (//)
-bool TokenProcessor::handleComment()
+void TokenProcessor::handleComment()
 {
-    if (index + 1 >= fileContents.size() || fileContents[index] != '/' ||
+    if (!canProcess() || index + 1 >= fileContents.size() || fileContents[index] != '/' ||
         fileContents[index + 1] != '/')
     {
-        return false;
+        return;
     }
 
     while (index < fileContents.size() && fileContents[index] != '\n')
     {
-        index++;
+        curLexeme += fileContents[index++];
     }
-    return true;
 }
 
 // Handle multi-character tokens
-bool TokenProcessor::handleMultiCharToken()
+void TokenProcessor::handleMultiCharToken()
 {
-    if (index + 1 >= fileContents.size())
+    if (!canProcess() || index + 1 >= fileContents.size())
     {
-        return false;
+        return;
     }
-    std::string multi_token = std::string(1, fileContents[index]) + fileContents[index + 1];
-    auto        it          = multi_token_map.find(multi_token);
-    if (it != multi_token_map.end())
+    std::string multiToken = std::string(1, fileContents[index]) + fileContents[index + 1];
+    auto        it         = multi_token_map.find(multiToken);
+    if (it == multi_token_map.end())
     {
-        std::cout << it->second << std::endl;
-        index += 2;
-        return true;
+        return;
     }
-    return false;
+    index += 2;
+    curLexeme += multiToken;
+    std::cout << it->second << std::endl;
 }
 
 // Handle single-character tokens
-bool TokenProcessor::handleSingleCharToken()
+void TokenProcessor::handleSingleCharToken()
 {
-    char c  = fileContents[index];
-    auto it = token_map.find(c);
-    if (it != token_map.end())
+    if (!canProcess())
     {
-        std::cout << it->second << std::endl;
-        index++;
-        return true;
+        return;
     }
-    return false;
+    auto it = token_map.find(fileContents[index]);
+    if (it == token_map.end())
+    {
+        return;
+    }
+    curLexeme += fileContents[index++];
+    std::cout << it->second << std::endl;
 }
 
-bool TokenProcessor::handleStringLiteral()
+void TokenProcessor::handleStringLiteral()
 {
-    if (fileContents[index] != '"')
+    if (!canProcess() || fileContents[index] != '"')
     {
-        return false;
+        return;
     }
+    curLexeme += fileContents[index];
     int endIndex = index + 1;
     while (endIndex < fileContents.size() && fileContents[endIndex] != '"' &&
            fileContents[endIndex] != '\n')
     {
-        endIndex++;
+        curLexeme += fileContents[endIndex++];
     }
-    if (fileContents[endIndex] == '"')
+    const char c = fileContents[endIndex];
+    curLexeme += c;
+    index = endIndex + 1;
+    if (c == '"')
     {
-        const std::string literal = fileContents.substr(index + 1, endIndex - index - 1);
-        std::cout << "STRING " << "\"" << literal << "\" " << literal << std::endl;
+        std::cout << "STRING " << curLexeme << " " << curLexeme.substr(1, curLexeme.size() - 2)
+                  << std::endl;
     }
     else
     {
         std::cerr << "[line " << lineNum << "] Error: Unterminated string." << std::endl;
         retVal = 65;
     }
-    if (fileContents[endIndex] == '\n')
+    if (c == '\n')
     {
         lineNum++;
     }
-    index = endIndex + 1;
-    return true;
 }
 
-bool TokenProcessor::handleNumberLiteral()
+void TokenProcessor::handleNumberLiteral()
 {
-    if (!std::isdigit(fileContents[index]))
+    if (!canProcess() || !std::isdigit(fileContents[index]))
     {
-        return false;
+        return;
     }
     std::string beforeDecimalStr, afterDecimalStr;
     while (std::isdigit(fileContents[index]))
     {
         beforeDecimalStr += fileContents[index++];
     }
-    std::string numStr = beforeDecimalStr;
+    curLexeme = beforeDecimalStr;
     if (fileContents[index] == '.')
     {
-        numStr += fileContents[index++];
+        curLexeme += fileContents[index++];
         while (std::isdigit(fileContents[index]))
         {
             afterDecimalStr += fileContents[index++];
         }
-        numStr += afterDecimalStr;
+        curLexeme += afterDecimalStr;
     }
     if (afterDecimalStr.empty())
     {
         afterDecimalStr = "0";
     }
-    std::cout << "NUMBER " << numStr << " " << beforeDecimalStr << "." << std::stof(afterDecimalStr)
-              << std::endl;
-    return true;
+    std::cout << "NUMBER " << curLexeme << " " << beforeDecimalStr << "."
+              << std::stof(afterDecimalStr) << std::endl;
 }
 
-bool TokenProcessor::handleIdentifier()
+void TokenProcessor::handleIdentifier()
 {
     char c = fileContents[index];
-    if (!std::isalpha(c) && c != '_')
+    if (!canProcess() || !(std::isalpha(c) || c == '_'))
     {
-        return false;
+        return;
     }
-
-    std::string id;
     while (std::isalnum(c) || c == '_')
     {
-        id += c;
+        curLexeme += c;
         index++;
         c = fileContents[index];
     }
-    std::cout << "IDENTIFIER " << id << " null" << std::endl;
-    return true;
+    std::cout << "IDENTIFIER " << curLexeme << " null" << std::endl;
 }
 
 // Handle unexpected characters
 void TokenProcessor::handleUnexpectedChar()
 {
-    std::cerr << "[line " << lineNum << "] Error: Unexpected character: " << fileContents[index++]
-              << std::endl;
+    if (!canProcess())
+    {
+        return;
+    }
+    curLexeme = fileContents[index++];
+    std::cerr << "[line " << lineNum << "] Error: Unexpected character: " << curLexeme << std::endl;
     retVal = 65;
+}
+
+void TokenProcessor::resetLexeme()
+{
+    curLexeme.clear();
 }
 
 // Main processing function
@@ -174,14 +191,15 @@ void TokenProcessor::process()
 {
     while (index < fileContents.size())
     {
+        resetLexeme();
         // The order is important -  handleMultiCharToken should come before handleSingleCharToken
-        if (handleWhitespaceAndNewlines() || handleComment() || handleMultiCharToken() ||
-            handleSingleCharToken() || handleStringLiteral() || handleNumberLiteral() ||
-            handleIdentifier())
-        {
-            continue;
-        }
-
+        handleWhitespaceAndNewlines();
+        handleComment();
+        handleMultiCharToken();
+        handleSingleCharToken();
+        handleStringLiteral();
+        handleNumberLiteral();
+        handleIdentifier();
         handleUnexpectedChar();
     }
     std::cout << "EOF  null" << std::endl;

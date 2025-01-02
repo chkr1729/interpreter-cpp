@@ -35,21 +35,26 @@ class TokenProcessor
         {">=", "GREATER_EQUAL >= null"}};
 
     // State variables
-    int index   = 0;
-    int lineNum = 1;
-    int retVal  = 0;
+    int         index     = 0;
+    int         lineNum   = 1;
+    int         retVal    = 0;
+    std::string curLexeme = "";
 
     std::string fileContents;
 
     // Helper functions
-    bool handleWhitespaceAndNewlines();
-    bool handleComment();
-    bool handleMultiCharToken();
-    bool handleSingleCharToken();
+    bool canProcess() const;
+
+    void resetLexeme();
+
+    void handleWhitespaceAndNewlines();
+    void handleComment();
+    void handleMultiCharToken();
+    void handleSingleCharToken();
     void handleUnexpectedChar();
-    bool handleStringLiteral();
-    bool handleNumberLiteral();
-    bool handleIdentifier();
+    void handleStringLiteral();
+    void handleNumberLiteral();
+    void handleIdentifier();
 
    public:
     // Constructor

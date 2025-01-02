@@ -41,13 +41,15 @@ class TokenProcessor
     int         retVal    = 0;
     std::string curLexeme = "";
 
-    std::string fileContents;
+    const std::string fileContents;
 
     // Helper functions
     bool canProcess() const;
 
-    void        resetLexeme();
-    static void removeTrailingZeros(std::string& str);
+    void resetLexeme();
+
+    static std::string readFileContents(const std::string& fileName);
+    static void        removeTrailingZeros(std::string& str);
 
     void handleWhitespaceAndNewlines();
     void handleComment();

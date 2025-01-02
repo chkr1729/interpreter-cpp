@@ -3,7 +3,8 @@
 #include <cctype>
 #include <regex>
 
-TokenProcessor::TokenProcessor(const std::string& fileName)
+// Helper function to read file contents
+std::string TokenProcessor::readFileContents(const std::string& fileName)
 {
     std::ifstream file(fileName);
     if (!file.is_open())
@@ -11,12 +12,15 @@ TokenProcessor::TokenProcessor(const std::string& fileName)
         std::cerr << "Error reading file: " << fileName << std::endl;
         std::exit(1);
     }
-
     std::stringstream buffer;
     buffer << file.rdbuf();
     file.close();
-
-    fileContents = buffer.str();
+    return buffer.str();
+}
+// Constructor
+TokenProcessor::TokenProcessor(const std::string& fileName)
+    : fileContents(readFileContents(fileName))  // Initialize fileContents
+{
 }
 
 bool TokenProcessor::canProcess() const

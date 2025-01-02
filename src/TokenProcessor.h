@@ -17,6 +17,7 @@ enum class TokenType
     StringLiteral,
     NumberLiteral,
     Identifier,
+    ReservedWord,
     Unexpected
 };
 
@@ -47,6 +48,24 @@ class TokenProcessor
         {"<=", "LESS_EQUAL <= null"},
         {">=", "GREATER_EQUAL >= null"}};
 
+    inline static const std::unordered_map<std::string, std::string> reservedWords = {
+        {"and", "AND"},
+        {"class", "CLASS"},
+        {"else", "ELSE"},
+        {"false", "FALSE"},
+        {"for", "FOR"},
+        {"fun", "FUN"},
+        {"if", "IF"},
+        {"nil", "NIL"},
+        {"or", "OR"},
+        {"print", "PRINT"},
+        {"return", "RETURN"},
+        {"super", "SUPER"},
+        {"this", "THIS"},
+        {"true", "TRUE"},
+        {"var", "VAR"},
+        {"while", "WHILE"}};
+
     // State variables
     int         index     = 0;
     int         lineNum   = 1;
@@ -60,7 +79,8 @@ class TokenProcessor
     static std::string readFileContents(const std::string& fileName);
     static void        removeTrailingZeros(std::string& str);
 
-    TokenType identifyTokenType() const;
+    TokenType   identifyTokenType() const;
+    std::string extractWordToken() const;
 
     void processToken();
     void processWhitespaceAndNewlines();
@@ -70,7 +90,9 @@ class TokenProcessor
     void processUnexpectedChar();
     void processStringLiteral();
     void processNumberLiteral();
+    void processWordToken();
     void processIdentifier();
+    void processReservedWord();
 
    public:
     // Constructor

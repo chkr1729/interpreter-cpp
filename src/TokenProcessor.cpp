@@ -23,6 +23,19 @@ TokenProcessor::TokenProcessor(const std::string& fileName)
 {
 }
 
+std::string TokenProcessor::extractWordToken() const
+{
+    size_t endIndex = index;
+
+    while (endIndex < fileContents.size() &&
+           (std::isalnum(fileContents[endIndex]) || fileContents[endIndex] == '_'))
+    {
+        endIndex++;
+    }
+
+    return fileContents.substr(index, endIndex - index);
+}
+
 TokenType TokenProcessor::identifyTokenType() const
 {
     char c = fileContents[index];
@@ -67,9 +80,17 @@ TokenType TokenProcessor::identifyTokenType() const
         return TokenType::NumberLiteral;
     }
 
-    // Check for identifiers
+    // Check for identifiers and reserved words
     if (std::isalpha(c) || c == '_')
     {
+        std::string identifier = extractWordToken();
+
+        // Check if it's a reserved word
+        if (reservedWords.find(identifier) != reservedWords.end())
+        {
+            return TokenType::ReservedWord;
+        }
+
         return TokenType::Identifier;
     }
 
@@ -157,34 +178,6 @@ void TokenProcessor::processStringLiteral()
     }
 }
 
-// void TokenProcessor::processStringLiteral()
-// {
-//     curLexeme += fileContents[index];
-//     int endIndex = index + 1;
-//     while (endIndex < fileContents.size() && fileContents[endIndex] != '"' &&
-//            fileContents[endIndex] != '\n')
-//     {
-//         curLexeme += fileContents[endIndex++];
-//     }
-//     const char c = fileContents[endIndex];
-//     curLexeme += c;
-//     index = endIndex + 1;
-//     if (c == '"')
-//     {
-//         std::cout << "STRING " << curLexeme << " " << curLexeme.substr(1, curLexeme.size() - 2)
-//                   << std::endl;
-//     }
-//     else
-//     {
-//         std::cerr << "[line " << lineNum << "] Error: Unterminated string." << std::endl;
-//         retVal = 65;
-//     }
-//     if (c == '\n')
-//     {
-//         lineNum++;
-//     }
-// }
-
 void TokenProcessor::removeTrailingZeros(std::string& str)
 {
     str = std::regex_replace(str, std::regex("\\.?0+$"), "");
@@ -222,15 +215,21 @@ void TokenProcessor::processNumberLiteral()
               << std::endl;
 }
 
+void TokenProcessor::processWordToken()
+{
+    curLexeme = extractWordToken();
+    index += curLexeme.size();
+}
+
+void TokenProcessor::processReservedWord()
+{
+    processWordToken();
+    std::cout << reservedWords.at(curLexeme) << " " << curLexeme << " null" << std::endl;
+}
+
 void TokenProcessor::processIdentifier()
 {
-    char c = fileContents[index];
-    while (std::isalnum(c) || c == '_')
-    {
-        curLexeme += c;
-        index++;
-        c = fileContents[index];
-    }
+    processWordToken();
     std::cout << "IDENTIFIER " << curLexeme << " null" << std::endl;
 }
 
@@ -265,6 +264,9 @@ void TokenProcessor::processToken()
             break;
         case TokenType::NumberLiteral:
             processNumberLiteral();
+            break;
+        case TokenType::ReservedWord:
+            processReservedWord();
             break;
         case TokenType::Identifier:
             processIdentifier();

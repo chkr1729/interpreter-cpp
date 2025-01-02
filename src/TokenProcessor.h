@@ -8,6 +8,18 @@
 #include <string>
 #include <unordered_map>
 
+enum class TokenType
+{
+    Whitespace,
+    Comment,
+    MultiCharToken,
+    SingleCharToken,
+    StringLiteral,
+    NumberLiteral,
+    Identifier,
+    Unexpected
+};
+
 class TokenProcessor
 {
    private:
@@ -44,21 +56,21 @@ class TokenProcessor
     const std::string fileContents;
 
     // Helper functions
-    bool canProcess() const;
-
-    void resetLexeme();
 
     static std::string readFileContents(const std::string& fileName);
     static void        removeTrailingZeros(std::string& str);
 
-    void handleWhitespaceAndNewlines();
-    void handleComment();
-    void handleMultiCharToken();
-    void handleSingleCharToken();
-    void handleUnexpectedChar();
-    void handleStringLiteral();
-    void handleNumberLiteral();
-    void handleIdentifier();
+    TokenType identifyTokenType() const;
+
+    void processToken();
+    void processWhitespaceAndNewlines();
+    void processComment();
+    void processMultiCharToken(int tokeLen = 2);
+    void processSingleCharToken();
+    void processUnexpectedChar();
+    void processStringLiteral();
+    void processNumberLiteral();
+    void processIdentifier();
 
    public:
     // Constructor

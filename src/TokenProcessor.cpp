@@ -23,23 +23,64 @@ TokenProcessor::TokenProcessor(const std::string& fileName)
 {
 }
 
-bool TokenProcessor::canProcess() const
+TokenType TokenProcessor::identifyTokenType() const
 {
-    return curLexeme.empty();
+    char c = fileContents[index];
+
+    // Check for whitespace or newline
+    if (c == ' ' || c == '\t' || c == '\n')
+    {
+        return TokenType::Whitespace;
+    }
+
+    // Check for single-line comments
+    if (c == '/' && index + 1 < fileContents.size() && fileContents[index + 1] == '/')
+    {
+        return TokenType::Comment;
+    }
+
+    // Check for multi-character tokens
+    if (index + 1 < fileContents.size())
+    {
+        std::string multiToken = std::string(1, c) + fileContents[index + 1];
+        if (multiTokenMap.find(multiToken) != multiTokenMap.end())
+        {
+            return TokenType::MultiCharToken;
+        }
+    }
+
+    // Check for single-character tokens
+    if (tokenMap.find(c) != tokenMap.end())
+    {
+        return TokenType::SingleCharToken;
+    }
+
+    // Check for string literals
+    if (c == '"')
+    {
+        return TokenType::StringLiteral;
+    }
+
+    // Check for number literals
+    if (std::isdigit(c))
+    {
+        return TokenType::NumberLiteral;
+    }
+
+    // Check for identifiers
+    if (std::isalpha(c) || c == '_')
+    {
+        return TokenType::Identifier;
+    }
+
+    // If none of the above, it's an unexpected character
+    return TokenType::Unexpected;
 }
 
 // Handle whitespace and newlines
-void TokenProcessor::handleWhitespaceAndNewlines()
+void TokenProcessor::processWhitespaceAndNewlines()
 {
-    if (!canProcess())
-    {
-        return;
-    }
-    char c = fileContents[index];
-    if (c != ' ' && c != '\t' && c != '\n')
-    {
-        return;
-    }
+    char c    = fileContents[index];
     curLexeme = c;
     index++;
     if (c == '\n')
@@ -49,14 +90,8 @@ void TokenProcessor::handleWhitespaceAndNewlines()
 }
 
 // Handle single-line comments (//)
-void TokenProcessor::handleComment()
+void TokenProcessor::processComment()
 {
-    if (!canProcess() || index + 1 >= fileContents.size() || fileContents[index] != '/' ||
-        fileContents[index + 1] != '/')
-    {
-        return;
-    }
-
     while (index < fileContents.size() && fileContents[index] != '\n')
     {
         curLexeme += fileContents[index++];
@@ -64,45 +99,24 @@ void TokenProcessor::handleComment()
 }
 
 // Handle multi-character tokens
-void TokenProcessor::handleMultiCharToken()
+void TokenProcessor::processMultiCharToken(int tokenLen)
 {
-    if (!canProcess() || index + 1 >= fileContents.size())
-    {
-        return;
-    }
-    std::string multiToken = std::string(1, fileContents[index]) + fileContents[index + 1];
-    auto        it         = multiTokenMap.find(multiToken);
-    if (it == multiTokenMap.end())
-    {
-        return;
-    }
-    index += 2;
+    std::string multiToken = fileContents.substr(index, tokenLen);
+    index += tokenLen;
     curLexeme += multiToken;
-    std::cout << it->second << std::endl;
+    std::cout << multiTokenMap.at(multiToken) << std::endl;
 }
 
 // Handle single-character tokens
-void TokenProcessor::handleSingleCharToken()
+void TokenProcessor::processSingleCharToken()
 {
-    if (!canProcess())
-    {
-        return;
-    }
-    auto it = tokenMap.find(fileContents[index]);
-    if (it == tokenMap.end())
-    {
-        return;
-    }
-    curLexeme += fileContents[index++];
-    std::cout << it->second << std::endl;
+    const char c = fileContents[index++];
+    curLexeme += c;
+    std::cout << tokenMap.at(c) << std::endl;
 }
 
-void TokenProcessor::handleStringLiteral()
+void TokenProcessor::processStringLiteral()
 {
-    if (!canProcess() || fileContents[index] != '"')
-    {
-        return;
-    }
     curLexeme += fileContents[index];
     int endIndex = index + 1;
     while (endIndex < fileContents.size() && fileContents[endIndex] != '"' &&
@@ -134,12 +148,8 @@ void TokenProcessor::removeTrailingZeros(std::string& str)
     str = std::regex_replace(str, std::regex("\\.?0+$"), "");
 }
 
-void TokenProcessor::handleNumberLiteral()
+void TokenProcessor::processNumberLiteral()
 {
-    if (!canProcess() || !std::isdigit(fileContents[index]))
-    {
-        return;
-    }
     // Lambda function to collect digits
     auto collectDigits = [&](std::string& target) {
         while (std::isdigit(fileContents[index]))
@@ -170,13 +180,9 @@ void TokenProcessor::handleNumberLiteral()
               << std::endl;
 }
 
-void TokenProcessor::handleIdentifier()
+void TokenProcessor::processIdentifier()
 {
     char c = fileContents[index];
-    if (!canProcess() || !(std::isalpha(c) || c == '_'))
-    {
-        return;
-    }
     while (std::isalnum(c) || c == '_')
     {
         curLexeme += c;
@@ -187,20 +193,44 @@ void TokenProcessor::handleIdentifier()
 }
 
 // Handle unexpected characters
-void TokenProcessor::handleUnexpectedChar()
+void TokenProcessor::processUnexpectedChar()
 {
-    if (!canProcess())
-    {
-        return;
-    }
     curLexeme = fileContents[index++];
     std::cerr << "[line " << lineNum << "] Error: Unexpected character: " << curLexeme << std::endl;
     retVal = 65;
 }
 
-void TokenProcessor::resetLexeme()
+void TokenProcessor::processToken()
 {
-    curLexeme.clear();
+    TokenType type = identifyTokenType();
+
+    switch (type)
+    {
+        case TokenType::Whitespace:
+            processWhitespaceAndNewlines();
+            break;
+        case TokenType::Comment:
+            processComment();
+            break;
+        case TokenType::MultiCharToken:
+            processMultiCharToken();
+            break;
+        case TokenType::SingleCharToken:
+            processSingleCharToken();
+            break;
+        case TokenType::StringLiteral:
+            processStringLiteral();
+            break;
+        case TokenType::NumberLiteral:
+            processNumberLiteral();
+            break;
+        case TokenType::Identifier:
+            processIdentifier();
+            break;
+        case TokenType::Unexpected:
+            processUnexpectedChar();
+            break;
+    }
 }
 
 // Main processing function
@@ -208,16 +238,8 @@ void TokenProcessor::process()
 {
     while (index < fileContents.size())
     {
-        resetLexeme();
-        // The order is important -  handleMultiCharToken should come before handleSingleCharToken
-        handleWhitespaceAndNewlines();
-        handleComment();
-        handleMultiCharToken();
-        handleSingleCharToken();
-        handleStringLiteral();
-        handleNumberLiteral();
-        handleIdentifier();
-        handleUnexpectedChar();
+        curLexeme.clear();
+        processToken();
     }
     std::cout << "EOF  null" << std::endl;
 }

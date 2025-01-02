@@ -1,5 +1,7 @@
 #include "TokenProcessor.h"
 
+#include <cctype>
+
 TokenProcessor::TokenProcessor(const std::string& fileName)
 {
     std::ifstream file(fileName);
@@ -140,13 +142,31 @@ bool TokenProcessor::handleNumberLiteral()
     return true;
 }
 
+bool TokenProcessor::handleIdentifier()
+{
+    char c = fileContents[index];
+    if (!std::isalpha(c) && c != '_')
+    {
+        return false;
+    }
+
+    std::string id;
+    while (std::isalnum(c) || c == '_')
+    {
+        id += c;
+        index++;
+        c = fileContents[index];
+    }
+    std::cout << "IDENTIFIER " << id << " null" << std::endl;
+    return true;
+}
+
 // Handle unexpected characters
 void TokenProcessor::handleUnexpectedChar()
 {
-    const char c = fileContents[index];
-    std::cerr << "[line " << lineNum << "] Error: Unexpected character: " << c << std::endl;
+    std::cerr << "[line " << lineNum << "] Error: Unexpected character: " << fileContents[index++]
+              << std::endl;
     retVal = 65;
-    index++;
 }
 
 // Main processing function
@@ -156,7 +176,8 @@ void TokenProcessor::process()
     {
         // The order is important -  handleMultiCharToken should come before handleSingleCharToken
         if (handleWhitespaceAndNewlines() || handleComment() || handleMultiCharToken() ||
-            handleSingleCharToken() || handleStringLiteral() || handleNumberLiteral())
+            handleSingleCharToken() || handleStringLiteral() || handleNumberLiteral() ||
+            handleIdentifier())
         {
             continue;
         }

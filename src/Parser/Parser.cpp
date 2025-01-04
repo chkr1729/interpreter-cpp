@@ -29,6 +29,13 @@ void Parser::parse()
                 {
                     std::cout << ")";
                 }
+                else if (token.isUnaryOperator())
+                {
+                    std::cout << "(" << token.getLexeme() << " ";
+                    index++;
+                    parse();
+                    std::cout << ")";
+                }
                 break;
             case TokenType::StringLiteral:
                 std::cout << tokens[index].getLiteral();
@@ -39,10 +46,9 @@ void Parser::parse()
             case TokenType::Identifier:
                 break;
             case TokenType::ReservedWord: {
-                const std::string lexeme = token.getLexeme();
-                if (isBooleanLiteral(lexeme))
+                if (token.isBooleanLiteral())
                 {
-                    std::cout << lexeme;
+                    std::cout << token.getLexeme();
                 }
                 break;
             }

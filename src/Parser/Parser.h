@@ -20,15 +20,6 @@ class Parser
     std::vector<Token> tokens;  // Stored by value, but moved in
 
     size_t index = 0;
-
-    // Allowed boolean literal values
-    inline static const std::unordered_set<std::string> booleanLiterals = {"true", "false", "nil"};
-
-    // Helper methods for parsing different literal types
-    bool isBooleanLiteral(const std::string& word) const
-    {
-        return booleanLiterals.find(word) != booleanLiterals.end();
-    }
 };
 
 #endif  // PARSER_H

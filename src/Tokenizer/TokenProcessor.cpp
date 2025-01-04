@@ -3,25 +3,13 @@
 #include <cassert>
 #include <cctype>
 #include <cstdlib>
-#include <regex>
 
-// Helper function to read file contents
-std::string TokenProcessor::readFileContents(const std::string& fileName)
-{
-    std::ifstream file(fileName);
-    if (!file.is_open())
-    {
-        std::cerr << "Error reading file: " << fileName << std::endl;
-        std::exit(1);
-    }
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    file.close();
-    return buffer.str();
-}
+#include "../Utils/FileUtils.h"
+#include "../Utils/StringUtils.h"
+
 // Constructor
 TokenProcessor::TokenProcessor(const std::string& fileName)
-    : fileContents(readFileContents(fileName))  // Initialize fileContents
+    : fileContents(readFile(fileName))  // Initialize fileContents
 {
 }
 
@@ -59,11 +47,6 @@ Token TokenProcessor::getStringLiteralToken() const
                  fileContents.substr(index + 1, endIndex - index - 1),
                  lineNum,
                  false);
-}
-
-void TokenProcessor::removeTrailingZeros(std::string& str)
-{
-    str = std::regex_replace(str, std::regex("\\.?0+$"), "");
 }
 
 Token TokenProcessor::getNumberLiteralToken() const

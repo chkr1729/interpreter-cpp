@@ -22,10 +22,6 @@ class TokenProcessor
     const std::string  fileContents;
     std::vector<Token> tokens;
 
-    // Helper functions
-    static std::string readFileContents(const std::string& fileName);
-    static void        removeTrailingZeros(std::string& str);
-
     bool isWhiteSpaceToken() const;
     bool isCommentToken() const;
     bool isMultiCharToken(size_t size) const;

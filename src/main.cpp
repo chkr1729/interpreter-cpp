@@ -1,4 +1,7 @@
+#include <iostream>
+
 #include "CommandLineArgs/CommandLineProcessor.h"
+#include "Parser/Parser.h"
 #include "Tokenizer/TokenProcessor.h"
 
 int main(int argc, char* argv[])
@@ -7,16 +10,28 @@ int main(int argc, char* argv[])
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
 
-    CommandLineStatus status = validateCommandLineArgs(argc, argv);
-    if (status != CommandLineStatus::SUCCESS)
+    CommandLineProcessor cmdProcessor(argc, argv);
+
+    if (!cmdProcessor.validateArgs())
     {
-        logCommandLineError(status, argv);
-        return static_cast<int>(status);  // Use status code as return value
+        return 1;  // Return error code if arguments are invalid
     }
 
-    TokenProcessor tokenProcessor(argv[2]);
-    tokenProcessor.process();
-    tokenProcessor.print();
+    const std::string command  = cmdProcessor.getCommand();
+    const std::string argument = cmdProcessor.getArgument();
 
-    return tokenProcessor.getRetVal();
+    if (command == "tokenize")
+    {
+        TokenProcessor tokenProcessor(argument);
+        tokenProcessor.process();
+        tokenProcessor.print();
+        return tokenProcessor.getRetVal();
+    }
+    else if (command == "parse")
+    {
+        Parser parser(argument);
+        parser.parse();
+    }
+
+    return 0;
 }

@@ -1,19 +1,26 @@
+#ifndef COMMAND_LINE_PROCESSOR_H
+#define COMMAND_LINE_PROCESSOR_H
 
-#ifndef COMMANDLINEPROCESSOR_H
-#define COMMANDLINEPROCESSOR_H
+#include <string>
 
-#include <fstream>
-#include <iostream>
-
-enum class CommandLineStatus
+class CommandLineProcessor
 {
-    SUCCESS,
-    INVALID_USAGE,
-    UNKNOWN_COMMAND,
-    FILE_NOT_FOUND
+   public:
+    // Constructor
+    CommandLineProcessor(int argc, char* argv[]);
+
+    // Returns true if the arguments are valid, false otherwise
+    bool validateArgs() const;
+
+    // Get the command (e.g., "tokenize" or "parse")
+    std::string getCommand() const;
+
+    // Get the argument (e.g., filename for "tokenize" or literal for "parse")
+    std::string getArgument() const;
+
+   private:
+    int    argc;
+    char** argv;
 };
 
-CommandLineStatus validateCommandLineArgs(int argc, char* argv[]);
-void              logCommandLineError(CommandLineStatus status, char* argv[]);
-
-#endif  // COMMANDLINEPROCESSOR_H
+#endif  // COMMAND_LINE_PROCESSOR_H

@@ -2,7 +2,7 @@
 
 #include "CommandLineArgs/CommandLineProcessor.h"
 #include "Parser/Parser.h"
-#include "Tokenizer/TokenProcessor.h"
+#include "Scanner/Scanner.h"
 
 int main(int argc, char* argv[])
 {
@@ -20,16 +20,17 @@ int main(int argc, char* argv[])
     const std::string command  = cmdProcessor.getCommand();
     const std::string argument = cmdProcessor.getArgument();
 
+    Scanner scanner(argument);
+    scanner.process();
+
     if (command == "tokenize")
     {
-        TokenProcessor tokenProcessor(argument);
-        tokenProcessor.process();
-        tokenProcessor.print();
-        return tokenProcessor.getRetVal();
+        scanner.print();
+        return scanner.getRetVal();
     }
     else if (command == "parse")
     {
-        Parser parser(argument);
+        Parser parser(scanner.getTokens());
         parser.parse();
     }
 

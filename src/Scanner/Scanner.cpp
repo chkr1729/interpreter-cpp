@@ -1,4 +1,4 @@
-#include "TokenProcessor.h"
+#include "Scanner.h"
 
 #include <cassert>
 #include <cctype>
@@ -8,12 +8,12 @@
 #include "../Utils/StringUtils.h"
 
 // Constructor
-TokenProcessor::TokenProcessor(const std::string& fileName)
+Scanner::Scanner(const std::string& fileName)
     : fileContents(readFile(fileName))  // Initialize fileContents
 {
 }
 
-Token TokenProcessor::getCommentToken() const
+Token Scanner::getCommentToken() const
 {
     std::string lexeme;
     size_t      endIndex = fileContents.find_first_of('\n', index + 1);
@@ -28,7 +28,7 @@ Token TokenProcessor::getCommentToken() const
             false};
 }
 
-Token TokenProcessor::getStringLiteralToken() const
+Token Scanner::getStringLiteralToken() const
 {
     size_t startIndex = index + 1;
     size_t endIndex   = fileContents.find_first_of("\"\n", startIndex);
@@ -49,7 +49,7 @@ Token TokenProcessor::getStringLiteralToken() const
                  false);
 }
 
-TokenProcessor::DecimalParts TokenProcessor::getBeforeAfterDecimalStrings() const
+Scanner::DecimalParts Scanner::getBeforeAfterDecimalStrings() const
 {
     std::string                beforeDecimal;
     std::optional<std::string> afterDecimal;
@@ -80,7 +80,7 @@ TokenProcessor::DecimalParts TokenProcessor::getBeforeAfterDecimalStrings() cons
     return {beforeDecimal, afterDecimal};
 }
 
-Token TokenProcessor::getNumberLiteralToken() const
+Token Scanner::getNumberLiteralToken() const
 {
     std::string lexeme;
 
@@ -96,7 +96,7 @@ Token TokenProcessor::getNumberLiteralToken() const
     return Token(TokenType::NumberLiteral, lexeme, formatNumberLiteral(lexeme), lineNum, false);
 }
 
-std::string TokenProcessor::extractWordToken() const
+std::string Scanner::extractWordToken() const
 {
     size_t endIndex = index;
 
@@ -109,34 +109,33 @@ std::string TokenProcessor::extractWordToken() const
     return fileContents.substr(index, endIndex - index);
 }
 
-Token TokenProcessor::getIdentifierAndReservedWordToken() const
+Token Scanner::getIdentifierAndReservedWordToken() const
 {
     std::string word = extractWordToken();
-    if (Token::reservedWords.find(word) != Token::reservedWords.end())
+    if (reservedWords.find(word) != reservedWords.end())
     {
         return Token(TokenType::ReservedWord, word, "null", lineNum, false);
     }
     return Token(TokenType::Identifier, word, "null", lineNum, false);
 }
 
-bool TokenProcessor::isWhiteSpaceToken() const
+bool Scanner::isWhiteSpaceToken() const
 {
     char c = fileContents[index];
     return (c == ' ' || c == '\t' || c == '\n');
 }
 
-bool TokenProcessor::isCommentToken() const
+bool Scanner::isCommentToken() const
 {
     return (fileContents[index] == '/' && index + 1 < fileContents.size() &&
             fileContents[index + 1] == '/');
 }
 
-bool TokenProcessor::isMultiCharToken(size_t size) const
+bool Scanner::isMultiCharToken(size_t size) const
 {
     if (index + 1 < fileContents.size())
     {
-        if (Token::multiTokenMap.find(fileContents.substr(index, size)) !=
-            Token::multiTokenMap.end())
+        if (multiTokenMap.find(fileContents.substr(index, size)) != multiTokenMap.end())
         {
             return true;
         }
@@ -144,18 +143,18 @@ bool TokenProcessor::isMultiCharToken(size_t size) const
     return false;
 }
 
-bool TokenProcessor::isSingleCharToken() const
+bool Scanner::isSingleCharToken() const
 {
-    return Token::tokenMap.find(fileContents[index]) != Token::tokenMap.end();
+    return tokenMap.find(fileContents[index]) != tokenMap.end();
 }
 
-bool TokenProcessor::isWordToken() const
+bool Scanner::isWordToken() const
 {
     const char c = fileContents[index];
     return std::isalpha(c) || c == '_';
 }
 
-Token TokenProcessor::getToken() const
+Token Scanner::getToken() const
 {
     if (isWhiteSpaceToken())
     {
@@ -207,7 +206,7 @@ Token TokenProcessor::getToken() const
 }
 
 // Main processing function
-void TokenProcessor::process()
+void Scanner::process()
 {
     while (index < fileContents.size())
     {
@@ -226,18 +225,57 @@ void TokenProcessor::process()
     }
 }
 
-void TokenProcessor::print()
+void Scanner::print()
 {
     for (auto token : tokens)
     {
-        if (token.hasError())
-        {
-            std::cerr << token;
-        }
-        else
-        {
-            std::cout << token;
-        }
+        print(token);
     }
     std::cout << "EOF  null" << std::endl;
+}
+
+void Scanner::print(Token token)
+{
+    switch (token.getType())
+    {
+        case TokenType::Whitespace:
+        case TokenType::Comment:
+            break;
+        case TokenType::MultiCharToken:
+            std::cout << multiTokenMap.at(token.getLexeme()) << std::endl;
+            break;
+        case TokenType::SingleCharToken:
+            std::cout << tokenMap.at(token.getLexeme().front()) << std::endl;
+            break;
+        case TokenType::StringLiteral:
+            if (token.hasError())
+            {
+                std::cerr << "[line " << token.getLineNumber() << "] Error: Unterminated string."
+                          << std::endl;
+            }
+            else
+            {
+                std::cout << "STRING " << token.getLexeme() << " " << token.getLiteral()
+                          << std::endl;
+            }
+            break;
+        case TokenType::NumberLiteral:
+            std::cout << "NUMBER " << token.getLexeme() << " " << token.getLiteral() << std::endl;
+            break;
+        case TokenType::Identifier:
+            std::cout << "IDENTIFIER " << token.getLexeme() << " " << token.getLiteral()
+                      << std::endl;
+            break;
+        case TokenType::ReservedWord:
+            std::cout << reservedWords.at(token.getLexeme()) << " " << token.getLexeme() << " "
+                      << token.getLiteral() << std::endl;
+            break;
+        case TokenType::Unexpected:
+            std::cerr << "[line " << token.getLineNumber()
+                      << "] Error: Unexpected character: " << token.getLexeme() << std::endl;
+            break;
+        default:
+            std::cerr << "Unknown" << std::endl;
+            break;
+    }
 }

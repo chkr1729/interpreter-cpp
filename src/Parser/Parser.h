@@ -4,25 +4,31 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
+#include <vector>
+
+#include "../Token/Token.h"
 
 class Parser
 {
    public:
-    // Constructor accepting a file name
-    Parser(const std::string& fileName);
+    Parser(std::vector<Token>&& tokens);  // Rvalue reference;
 
     // Parse the file contents and print the result
     void parse();
 
    private:
-    const std::string fileContents;
+    std::vector<Token> tokens;  // Stored by value, but moved in
+
+    size_t index = 0;
+
+    // Allowed boolean literal values
+    inline static const std::unordered_set<std::string> booleanLiterals = {"true", "false", "nil"};
 
     // Helper methods for parsing different literal types
-    bool isBooleanLiteral(const std::string& word) const;
-    void handleBooleanLiteral(const std::string& word) const;
-
-    bool isNumberLiteral(const std::string& word) const;
-    void handleNumberLiteral(const std::string& word) const;
+    bool isBooleanLiteral(const std::string& word) const
+    {
+        return booleanLiterals.find(word) != booleanLiterals.end();
+    }
 };
 
 #endif  // PARSER_H

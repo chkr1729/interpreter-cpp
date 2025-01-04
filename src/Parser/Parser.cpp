@@ -5,6 +5,7 @@
 #include <unordered_set>
 
 #include "../Utils/FileUtils.h"
+#include "../Utils/StringUtils.h"
 
 // Allowed boolean literal values
 const std::unordered_set<std::string> booleanLiterals = {"true", "false", "nil"};
@@ -25,6 +26,10 @@ void Parser::parse()
         {
             handleBooleanLiteral(word);
         }
+        else if (isNumberLiteral(word))
+        {
+            handleNumberLiteral(word);
+        }
         else
         {
             std::cerr << "Error: Unsupported literal type: " << word << std::endl;
@@ -42,4 +47,16 @@ bool Parser::isBooleanLiteral(const std::string& word) const
 void Parser::handleBooleanLiteral(const std::string& word) const
 {
     std::cout << word << std::endl;
+}
+
+// Check if a word is a number literal
+bool Parser::isNumberLiteral(const std::string& str) const
+{
+    return isNumber(str);
+}
+
+// Handle and print number literals
+void Parser::handleNumberLiteral(const std::string& word) const
+{
+    std::cout << formatNumberLiteral(word) << std::endl;
 }

@@ -5,6 +5,7 @@
 #include <string>
 
 // Removes trailing zeros from a numeric string (after a decimal point)
-void removeTrailingZeros(std::string& str);
+std::string formatNumberLiteral(const std::string& word);
+bool        isNumber(const std::string& word);
 
 #endif  // STRING_UTILS_H

@@ -20,6 +20,9 @@ class Parser
     // Helper methods for parsing different literal types
     bool isBooleanLiteral(const std::string& word) const;
     void handleBooleanLiteral(const std::string& word) const;
+
+    bool isNumberLiteral(const std::string& word) const;
+    void handleNumberLiteral(const std::string& word) const;
 };
 
 #endif  // PARSER_H

@@ -82,29 +82,18 @@ TokenProcessor::DecimalParts TokenProcessor::getBeforeAfterDecimalStrings() cons
 
 Token TokenProcessor::getNumberLiteralToken() const
 {
-    std::string lexeme, numberStringLiteral;
+    std::string lexeme;
 
     auto [beforeDecimalStr, afterDecimal] = getBeforeAfterDecimalStrings();
-    std::string afterDecimalStr;
 
     lexeme += beforeDecimalStr;
-    numberStringLiteral += beforeDecimalStr;
 
     if (afterDecimal)
     {
-        afterDecimalStr = *afterDecimal;
-        lexeme += ("." + afterDecimalStr);
-        removeTrailingZeros(afterDecimalStr);
+        lexeme += ("." + *afterDecimal);
     }
 
-    if (afterDecimalStr.empty())
-    {
-        afterDecimalStr = "0";
-    }
-
-    numberStringLiteral += ("." + afterDecimalStr);
-
-    return Token(TokenType::NumberLiteral, lexeme, numberStringLiteral, lineNum, false);
+    return Token(TokenType::NumberLiteral, lexeme, formatNumberLiteral(lexeme), lineNum, false);
 }
 
 std::string TokenProcessor::extractWordToken() const

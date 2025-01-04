@@ -49,39 +49,62 @@ Token TokenProcessor::getStringLiteralToken() const
                  false);
 }
 
-Token TokenProcessor::getNumberLiteralToken() const
+TokenProcessor::DecimalParts TokenProcessor::getBeforeAfterDecimalStrings() const
 {
-    std::string lexeme;
-    size_t      tempIndex = index;
+    std::string                beforeDecimal;
+    std::optional<std::string> afterDecimal;
+    size_t                     localIndex = index;  // Use a local index variable
 
+    // Lambda to collect digits into the given string
     auto collectDigits = [&](std::string& target) {
-        while (std::isdigit(fileContents[tempIndex]))
+        while (localIndex < fileContents.size() && std::isdigit(fileContents[localIndex]))
         {
-            target += fileContents[tempIndex++];
+            target += fileContents[localIndex++];
         }
     };
 
-    std::string beforeDecimalStr, afterDecimalStr;
+    collectDigits(beforeDecimal);  // Collect digits before the decimal point
 
-    // Collect digits before the decimal point
-    collectDigits(beforeDecimalStr);
-    lexeme += beforeDecimalStr;
-
-    // Handle the decimal point and digits after it
-    if (fileContents[tempIndex] == '.')
+    if (localIndex < fileContents.size() && fileContents[localIndex] == '.')
     {
-        lexeme += fileContents[tempIndex++];  // Append the decimal point
-        collectDigits(afterDecimalStr);       // Collect digits after the decimal point
-        lexeme += afterDecimalStr;
+        localIndex++;  // Skip the decimal point
+        std::string afterDecimalStr;
+        collectDigits(afterDecimalStr);  // Collect digits after the decimal point
+
+        if (!afterDecimalStr.empty())
+        {
+            afterDecimal = afterDecimalStr;  // Assign only if non-empty
+        }
     }
-    removeTrailingZeros(afterDecimalStr);
+
+    return {beforeDecimal, afterDecimal};
+}
+
+Token TokenProcessor::getNumberLiteralToken() const
+{
+    std::string lexeme, numberStringLiteral;
+
+    auto [beforeDecimalStr, afterDecimal] = getBeforeAfterDecimalStrings();
+    std::string afterDecimalStr;
+
+    lexeme += beforeDecimalStr;
+    numberStringLiteral += beforeDecimalStr;
+
+    if (afterDecimal)
+    {
+        afterDecimalStr = *afterDecimal;
+        lexeme += ("." + afterDecimalStr);
+        removeTrailingZeros(afterDecimalStr);
+    }
+
     if (afterDecimalStr.empty())
     {
         afterDecimalStr = "0";
     }
 
-    return Token(
-        TokenType::NumberLiteral, lexeme, beforeDecimalStr + "." + afterDecimalStr, lineNum, false);
+    numberStringLiteral += ("." + afterDecimalStr);
+
+    return Token(TokenType::NumberLiteral, lexeme, numberStringLiteral, lineNum, false);
 }
 
 std::string TokenProcessor::extractWordToken() const

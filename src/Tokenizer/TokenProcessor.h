@@ -13,6 +13,20 @@
 
 class TokenProcessor
 {
+   public:
+    // Type alias for decimal parts (before and after decimal point)
+    using DecimalParts = std::pair<std::string, std::optional<std::string>>;
+
+    // Constructor
+    TokenProcessor(const std::string& fileName);
+
+    // Main processing function
+    void process();
+    void print();
+
+    // Get the result
+    int getRetVal() const { return retVal; }
+
    private:
     // State variables
     int index   = 0;
@@ -30,25 +44,14 @@ class TokenProcessor
     bool isNumberLiteralToken() const { return std::isdigit(fileContents[index]); }
     bool isWordToken() const;
 
-    std::string extractWordToken() const;
+    std::string  extractWordToken() const;
+    DecimalParts getBeforeAfterDecimalStrings() const;
 
     Token getCommentToken() const;
     Token getStringLiteralToken() const;
     Token getNumberLiteralToken() const;
     Token getIdentifierAndReservedWordToken() const;
     Token getToken() const;
-
-   public:
-    // Constructor
-    TokenProcessor() = default;
-    TokenProcessor(const std::string& fileName);
-
-    // Main processing function
-    void process();
-    void print();
-
-    // Get the result
-    int getRetVal() const { return retVal; }
 };
 
 #endif  // TOKEN_PROCESSOR_H

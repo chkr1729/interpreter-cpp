@@ -1,62 +1,129 @@
 #include "Parser.h"
 
-#include <iostream>
-
-// Constructor: Move the tokens into the internal storage
+// Constructor: Move tokens into the parser
 Parser::Parser(std::vector<Token>&& tokens) : tokens(std::move(tokens)) {}
 
-// Parse the file contents
-void Parser::parse()
+std::unique_ptr<Expr> Parser::parse()
 {
-    while (index < tokens.size())
-    {
-        Token token = tokens[index];
+    return parseExpression();  // Start parsing from the top-level expression
+}
 
-        switch (token.getType())
-        {
-            case TokenType::Whitespace:
-            case TokenType::Comment:
-            case TokenType::MultiCharToken:
-                break;
-            case TokenType::SingleCharToken:
-                if (token.getLexeme() == "(")
-                {
-                    std::cout << "(group ";
-                    index++;
-                    parse();
-                }
-                else if (token.getLexeme() == ")")
-                {
-                    std::cout << ")";
-                }
-                else if (token.isUnaryOperator())
-                {
-                    std::cout << "(" << token.getLexeme() << " ";
-                    index++;
-                    parse();
-                    std::cout << ")";
-                }
-                break;
-            case TokenType::StringLiteral:
-                std::cout << tokens[index].getLiteral();
-                break;
-            case TokenType::NumberLiteral:
-                std::cout << token.getLiteral();
-                break;
-            case TokenType::Identifier:
-                break;
-            case TokenType::ReservedWord: {
-                if (token.isBooleanLiteral())
-                {
-                    std::cout << token.getLexeme();
-                }
-                break;
-            }
-            case TokenType::Unexpected:
-            default:
-                std::cerr << "Error: Unexpected token: " << token.getLexeme() << std::endl;
-                break;
-        }
-        index++;
+// Parse an expression (handles + and -)
+std::unique_ptr<Expr> Parser::parseExpression()
+{
+    auto left = parseTerm();
+
+    while (match({"+", "-"}))
+    {
+        Token operatorToken = tokens[current - 1];  // The matched operator
+        auto  right         = parseTerm();
+        left =
+            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
     }
+
+    return left;
+}
+
+// Parse a term (handles * and /)
+std::unique_ptr<Expr> Parser::parseTerm()
+{
+    auto left = parseFactor();
+
+    while (match({"*", "/"}))
+    {
+        Token operatorToken = tokens[current - 1];  // The matched operator
+        auto  right         = parseFactor();
+        left =
+            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
+    }
+
+    return left;
+}
+
+// Parse a factor (numbers or grouped expressions)
+std::unique_ptr<Expr> Parser::parseFactor()
+{
+    Token token = peek();
+
+    // Handle unary operators: ! and -
+    if (match({"!", "-"}))
+    {
+        Token operatorToken = tokens[current - 1];  // The matched operator
+        auto  right         = parseFactor();        // Recursively parse the operand
+        return std::make_unique<Unary>(operatorToken, std::move(right));
+    }
+
+    if (match({"("}))
+    {
+        auto expression = parseExpression();
+        if (!match({")"}))
+        {
+            std::cerr << "Error: Missing closing parenthesis" << std::endl;
+        }
+        return std::make_unique<Grouping>(std::move(expression));
+    }
+
+    if (token.getType() == TokenType::NumberLiteral || token.getType() == TokenType::StringLiteral)
+    {
+        Token literalToken = advance();  // Consume the literal token (number or string)
+        return std::make_unique<Literal>(literalToken.getLiteral());
+    }
+
+    if (token.getType() == TokenType::ReservedWord)
+    {
+        if (token.getLexeme() == "true" || token.getLexeme() == "false" ||
+            token.getLexeme() == "nil")
+        {
+            Token reservedToken = advance();  // Consume the literal token
+            return std::make_unique<Literal>(reservedToken.getLexeme());
+        }
+    }
+
+    std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;
+    advance();  // Consume the unexpected token to prevent infinite loop
+    return nullptr;
+}
+
+// Helper method: Advances and returns the current token
+Token Parser::advance()
+{
+    if (!isAtEnd()) current++;
+    return tokens[current - 1];  // Return the previous token
+}
+
+// Helper method: Returns the current token without advancing
+Token Parser::peek() const
+{
+    return tokens[current];
+}
+
+// Helper method: Checks if we've reached the end of the tokens
+bool Parser::isAtEnd() const
+{
+    return current >= tokens.size();
+}
+
+// Helper method: Checks if the current token matches any of the given lexemes and advances if it
+// does
+bool Parser::match(const std::vector<std::string>& lexemes)
+{
+    if (isAtEnd()) return false;
+
+    for (const auto& lexeme : lexemes)
+    {
+        if (peek().getLexeme() == lexeme)
+        {
+            advance();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Helper method: Checks if the current token matches the given lexeme without advancing
+bool Parser::check(const std::string& lexeme) const
+{
+    if (isAtEnd()) return false;
+    return peek().getLexeme() == lexeme;
 }

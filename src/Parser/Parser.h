@@ -2,24 +2,32 @@
 #define PARSER_H
 
 #include <iostream>
-#include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "../Token/Token.h"
+#include "Expr.h"
 
 class Parser
 {
    public:
-    Parser(std::vector<Token>&& tokens);  // Rvalue reference;
-
-    // Parse the file contents and print the result
-    void parse();
+    explicit Parser(std::vector<Token>&& tokens);
+    std::unique_ptr<Expr> parse();  // Returns the root of the expression tree
 
    private:
-    std::vector<Token> tokens;  // Stored by value, but moved in
+    std::vector<Token> tokens;
+    size_t             current = 0;
 
-    size_t index = 0;
+    // Recursive descent parsing methods
+    std::unique_ptr<Expr> parseExpression();
+    std::unique_ptr<Expr> parseTerm();
+    std::unique_ptr<Expr> parseFactor();
+
+    // Helper methods
+    bool  match(const std::vector<std::string>& lexemes);
+    bool  check(const std::string& lexeme) const;
+    Token advance();
+    Token peek() const;
+    bool  isAtEnd() const;
 };
 
 #endif  // PARSER_H

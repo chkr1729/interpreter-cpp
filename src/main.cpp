@@ -2,6 +2,7 @@
 
 #include "CommandLineArgs/CommandLineProcessor.h"
 #include "Parser/Parser.h"
+#include "Parser/PrintVisitor.h"
 #include "Scanner/Scanner.h"
 
 int main(int argc, char* argv[])
@@ -31,7 +32,18 @@ int main(int argc, char* argv[])
     else if (command == "parse")
     {
         Parser parser(scanner.getTokens());
-        parser.parse();
+        auto   expression = parser.parse();
+        if (expression)
+        {
+            PrintVisitor printer;
+            expression->accept(printer);
+            std::cout << std::endl;
+        }
+        else
+        {
+            std::cerr << "Parsing failed due to errors." << std::endl;
+            return 1;
+        }
     }
 
     return 0;

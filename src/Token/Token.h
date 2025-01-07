@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_set>
 
+// #TODO: Add TokenGroup for better grouping like Literal, Operator, Whitespaces etc.
 enum class TokenType
 {
     Whitespace,
@@ -33,8 +34,8 @@ class Token
     // Accessors
     TokenType          getType() const { return type; }
     const std::string& getLexeme() const { return lexeme; }
-    int                getLineNumber() const { return lineNumber; }
     const std::string& getLiteral() const { return literal; }
+    int                getLineNumber() const { return lineNumber; }
     bool               hasError() const { return error; }
 
     // Check if the token's lexeme contains a newline character

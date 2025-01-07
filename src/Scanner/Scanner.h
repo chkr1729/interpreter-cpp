@@ -49,6 +49,7 @@ class Scanner
     bool isNumberLiteralToken() const { return std::isdigit(fileContents[index]); }
     bool isWordToken() const;
 
+    // TODO: Try to move these functions to StringUtils
     std::string  extractWordToken() const;
     DecimalParts getBeforeAfterDecimalStrings() const;
 
@@ -59,6 +60,7 @@ class Scanner
     Token getToken() const;
 
     // Token maps
+    // TODO: Combine these maps
     inline static const std::unordered_map<char, std::string> tokenMap = {
         {'(', "LEFT_PAREN ( null"},
         {')', "RIGHT_PAREN ) null"},

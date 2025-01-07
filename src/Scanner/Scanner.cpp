@@ -210,8 +210,8 @@ void Scanner::process()
 {
     while (index < fileContents.size())
     {
-        auto token = getToken();
-        tokens.emplace_back(token);
+        auto token     = getToken();
+        auto tokenType = token.getType();
         assert(token.size() > 0);
         index += token.size();
         if (token.hasNewLine())
@@ -222,6 +222,12 @@ void Scanner::process()
         {
             retVal = 65;
         }
+        // We will not add whitespace or comment tokens
+        if (tokenType == TokenType::Whitespace || tokenType == TokenType::Comment)
+        {
+            continue;
+        }
+        tokens.emplace_back(token);
     }
 }
 

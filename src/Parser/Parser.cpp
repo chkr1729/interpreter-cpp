@@ -59,12 +59,12 @@ std::unique_ptr<Expr> Parser::parseTerm()
 // Parse a factor (handles *, / and unary operators)
 std::unique_ptr<Expr> Parser::parseFactor()
 {
-    auto left = parsePrimary();
+    auto left = parseUnary();
 
     while (match({"*", "/"}))
     {
         Token operatorToken = tokens[current - 1];  // The matched operator
-        auto  right         = parsePrimary();
+        auto  right         = parseUnary();
         left =
             std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
     }
@@ -72,18 +72,22 @@ std::unique_ptr<Expr> Parser::parseFactor()
     return left;
 }
 
+// Parse unary operators
+std::unique_ptr<Expr> Parser::parseUnary()
+{
+    if (match({"!", "-"}))
+    {
+        Token operatorToken = tokens[current - 1];  // The matched operator
+        auto  right         = parseUnary();         // Recursively parse the operand
+        return std::make_unique<Unary>(operatorToken, std::move(right));
+    }
+    return parsePrimary();
+}
+
 // Parse a primary expression (numbers, grouped expressions, and unary operators)
 std::unique_ptr<Expr> Parser::parsePrimary()
 {
     Token token = peek();
-
-    // Handle unary operators: ! and -
-    if (match({"!", "-"}))
-    {
-        Token operatorToken = tokens[current - 1];  // The matched operator
-        auto  right         = parsePrimary();       // Recursively parse the operand
-        return std::make_unique<Unary>(operatorToken, std::move(right));
-    }
 
     // Handle grouped expressions
     if (match({"("}))

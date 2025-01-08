@@ -8,12 +8,12 @@ std::unique_ptr<Expr> Parser::parse()
     return parseExpression();  // Start parsing from the top-level expression
 }
 
-// Parse an expression (handles + and -)
+// Parse an expression (handles comparison operators)
 std::unique_ptr<Expr> Parser::parseExpression()
 {
     auto left = parseTerm();
 
-    while (match({"+", "-"}))
+    while (match({">", "<", ">=", "<="}))
     {
         Token operatorToken = tokens[current - 1];  // The matched operator
         auto  right         = parseTerm();
@@ -24,12 +24,12 @@ std::unique_ptr<Expr> Parser::parseExpression()
     return left;
 }
 
-// Parse a term (handles * and /)
+// Parse a term (handles + and -)
 std::unique_ptr<Expr> Parser::parseTerm()
 {
     auto left = parseFactor();
 
-    while (match({"*", "/"}))
+    while (match({"+", "-"}))
     {
         Token operatorToken = tokens[current - 1];  // The matched operator
         auto  right         = parseFactor();
@@ -40,8 +40,24 @@ std::unique_ptr<Expr> Parser::parseTerm()
     return left;
 }
 
-// Parse a factor (numbers or grouped expressions)
+// Parse a factor (handles *, / and unary operators)
 std::unique_ptr<Expr> Parser::parseFactor()
+{
+    auto left = parsePrimary();
+
+    while (match({"*", "/"}))
+    {
+        Token operatorToken = tokens[current - 1];  // The matched operator
+        auto  right         = parsePrimary();
+        left =
+            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
+    }
+
+    return left;
+}
+
+// Parse a primary expression (numbers, grouped expressions, and unary operators)
+std::unique_ptr<Expr> Parser::parsePrimary()
 {
     Token token = peek();
 
@@ -49,10 +65,11 @@ std::unique_ptr<Expr> Parser::parseFactor()
     if (match({"!", "-"}))
     {
         Token operatorToken = tokens[current - 1];  // The matched operator
-        auto  right         = parseFactor();        // Recursively parse the operand
+        auto  right         = parsePrimary();       // Recursively parse the operand
         return std::make_unique<Unary>(operatorToken, std::move(right));
     }
 
+    // Handle grouped expressions
     if (match({"("}))
     {
         auto expression = parseExpression();
@@ -63,10 +80,17 @@ std::unique_ptr<Expr> Parser::parseFactor()
         return std::make_unique<Grouping>(std::move(expression));
     }
 
-    if (token.getType() == TokenType::NumberLiteral || token.getType() == TokenType::StringLiteral)
+    // Handle literals
+    if (token.getType() == TokenType::NumberLiteral)
     {
-        Token literalToken = advance();  // Consume the literal token (number or string)
-        return std::make_unique<Literal>(literalToken.getLiteral());
+        Token numberToken = advance();  // Consume the number token
+        return std::make_unique<Literal>(numberToken.getLiteral());
+    }
+
+    if (token.getType() == TokenType::StringLiteral)
+    {
+        Token stringToken = advance();  // Consume the string token
+        return std::make_unique<Literal>(stringToken.getLiteral());
     }
 
     if (token.getType() == TokenType::ReservedWord)

@@ -19,8 +19,10 @@ class Parser
 
     // Recursive descent parsing methods
     std::unique_ptr<Expr> parseExpression();
+    std::unique_ptr<Expr> parseComparison();
     std::unique_ptr<Expr> parseTerm();
     std::unique_ptr<Expr> parseFactor();
+    std::unique_ptr<Expr> parsePrimary();
 
     // Helper methods
     bool  match(const std::vector<std::string>& lexemes);

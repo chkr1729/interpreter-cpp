@@ -37,13 +37,11 @@ int main(int argc, char* argv[])
         {
             PrintVisitor printer;
             expression->accept(printer);
-            std::cout << std::endl;
+            return 0;
+            // return parser.getRetVal();
         }
-        else
-        {
-            std::cerr << "Parsing failed due to errors." << std::endl;
-            return 1;
-        }
+        std::cerr << "Parsing failed due to errors." << std::endl;
+        return 65;
     }
 
     return 0;

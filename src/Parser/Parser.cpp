@@ -92,6 +92,8 @@ std::unique_ptr<Expr> Parser::parsePrimary()
         if (!match({")"}))
         {
             std::cerr << "Error: Missing closing parenthesis" << std::endl;
+            advance();
+            return nullptr;
         }
         return std::make_unique<Grouping>(std::move(expression));
     }
@@ -105,6 +107,13 @@ std::unique_ptr<Expr> Parser::parsePrimary()
 
     if (token.getType() == TokenType::StringLiteral)
     {
+        if (token.hasError())
+        {
+            std::cerr << "Unterminated string literal" << std::endl;
+            advance();
+            return nullptr;
+        }
+
         Token stringToken = advance();  // Consume the string token
         return std::make_unique<Literal>(stringToken.getLiteral());
     }

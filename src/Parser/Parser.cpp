@@ -8,8 +8,24 @@ std::unique_ptr<Expr> Parser::parse()
     return parseExpression();  // Start parsing from the top-level expression
 }
 
-// Parse an expression (handles comparison operators)
+// Parse an expression (handles equality operators)
 std::unique_ptr<Expr> Parser::parseExpression()
+{
+    auto left = parseComparison();
+
+    while (match({"==", "!="}))
+    {
+        Token operatorToken = tokens[current - 1];  // The matched operator
+        auto  right         = parseComparison();
+        left =
+            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
+    }
+
+    return left;
+}
+
+// Parse a comparison (handles >, <, >=, <=)
+std::unique_ptr<Expr> Parser::parseComparison()
 {
     auto left = parseTerm();
 

@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include <cstddef>
+#include <functional>
 #include <iostream>
 #include <vector>
 
@@ -25,6 +26,9 @@ class Parser
     std::unique_ptr<Expr> parseFactor();
     std::unique_ptr<Expr> parseUnary();
     std::unique_ptr<Expr> parsePrimary();
+
+    std::unique_ptr<Expr> parseBinary(std::function<std::unique_ptr<Expr>()> subParser,
+                                      const std::vector<std::string>&        operators);
 
     // Helper methods
     bool  match(const std::vector<std::string>& lexemes);

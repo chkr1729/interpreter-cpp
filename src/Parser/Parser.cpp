@@ -11,65 +11,25 @@ std::unique_ptr<Expr> Parser::parse()
 // Parse an expression (handles equality operators)
 std::unique_ptr<Expr> Parser::parseExpression()
 {
-    auto left = parseComparison();
-
-    while (match({"==", "!="}))
-    {
-        Token operatorToken = tokens[current - 1];  // The matched operator
-        auto  right         = parseComparison();
-        left =
-            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
-    }
-
-    return left;
+    return parseBinary([this]() { return parseComparison(); }, {"==", "!="});
 }
 
 // Parse a comparison (handles >, <, >=, <=)
 std::unique_ptr<Expr> Parser::parseComparison()
 {
-    auto left = parseTerm();
-
-    while (match({">", "<", ">=", "<="}))
-    {
-        Token operatorToken = tokens[current - 1];  // The matched operator
-        auto  right         = parseTerm();
-        left =
-            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
-    }
-
-    return left;
+    return parseBinary([this]() { return parseTerm(); }, {">", "<", ">=", "<="});
 }
 
 // Parse a term (handles + and -)
 std::unique_ptr<Expr> Parser::parseTerm()
 {
-    auto left = parseFactor();
-
-    while (match({"+", "-"}))
-    {
-        Token operatorToken = tokens[current - 1];  // The matched operator
-        auto  right         = parseFactor();
-        left =
-            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
-    }
-
-    return left;
+    return parseBinary([this]() { return parseFactor(); }, {"+", "-"});
 }
 
-// Parse a factor (handles *, / and unary operators)
+// Parse a factor (handles * and /)
 std::unique_ptr<Expr> Parser::parseFactor()
 {
-    auto left = parseUnary();
-
-    while (match({"*", "/"}))
-    {
-        Token operatorToken = tokens[current - 1];  // The matched operator
-        auto  right         = parseUnary();
-        left =
-            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
-    }
-
-    return left;
+    return parseBinary([this]() { return parseUnary(); }, {"*", "/"});
 }
 
 // Parse unary operators
@@ -135,6 +95,23 @@ std::unique_ptr<Expr> Parser::parsePrimary()
     std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;
     advance();  // Consume the unexpected token to prevent infinite loop
     return nullptr;
+}
+
+// Helper function for parsing binary expressions
+std::unique_ptr<Expr> Parser::parseBinary(std::function<std::unique_ptr<Expr>()> subParser,
+                                          const std::vector<std::string>&        operators)
+{
+    auto left = subParser();
+
+    while (match(operators))
+    {
+        Token operatorToken = tokens[current - 1];  // The matched operator
+        auto  right         = subParser();
+        left =
+            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
+    }
+
+    return left;
 }
 
 // Helper method: Advances and returns the current token

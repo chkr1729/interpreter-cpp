@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "Visitor.h"
+#include "../Expression/Visitor.h"
 
 class PrintVisitor : public Visitor
 {
@@ -19,7 +19,7 @@ class PrintVisitor : public Visitor
 
     void visitUnary(const Unary& expr) override
     {
-        std::cout << "(" << expr.getOperator().getLexeme() << " ";
+        std::cout << "(" << expr.getOperator() << " ";
         expr.getRight()->accept(*this);
         std::cout << ")";
     }

@@ -1,7 +1,10 @@
-#ifndef VISITOR_H
-#define VISITOR_H
+#pragma once
 
-#include "Expr.h"
+// Forward Declarations
+class Literal;
+class Grouping;
+class Binary;
+class Unary;
 
 class Visitor
 {
@@ -11,5 +14,3 @@ class Visitor
     virtual void visitBinary(const Binary& expr)     = 0;
     virtual void visitUnary(const Unary& expr)       = 0;
 };
-
-#endif  // VISITOR_H

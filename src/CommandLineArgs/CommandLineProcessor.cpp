@@ -4,7 +4,7 @@
 #include <unordered_set>
 
 // Allowed commands
-const std::unordered_set<std::string> validCommands = {"tokenize", "parse"};
+const std::unordered_set<std::string> validCommands = {"tokenize", "parse", "evaluate"};
 
 // Constructor
 CommandLineProcessor::CommandLineProcessor(int argc, char* argv[]) : argc(argc), argv(argv) {}

@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "CommandLineArgs/CommandLineProcessor.h"
+#include "Evaluator/Evaluator.h"
 #include "Parser/Parser.h"
 #include "Parser/PrintVisitor.h"
 #include "Scanner/Scanner.h"
@@ -29,18 +30,28 @@ int main(int argc, char* argv[])
         scanner.print();
         return scanner.getRetVal();
     }
-    else if (command == "parse")
+
+    Parser parser(scanner.getTokens());
+
+    auto expression = parser.parse();
+    if (!expression)
     {
-        Parser parser(scanner.getTokens());
-        auto   expression = parser.parse();
-        if (expression)
-        {
-            PrintVisitor printer;
-            expression->accept(printer);
-            return 0;
-        }
         std::cerr << "Parsing failed due to errors." << std::endl;
         return 65;
+    }
+
+    if (command == "parse")
+    {
+        PrintVisitor printer;
+        expression->accept(printer);
+        return 0;
+    }
+
+    if (command == "evaluate")
+    {
+        Evaluator evaluator;
+        expression->accept(evaluator);
+        evaluator.printResult();
     }
 
     return 0;

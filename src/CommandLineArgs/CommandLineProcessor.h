@@ -1,6 +1,4 @@
-#ifndef COMMAND_LINE_PROCESSOR_H
-#define COMMAND_LINE_PROCESSOR_H
-
+#pragma once
 #include <string>
 
 class CommandLineProcessor
@@ -22,5 +20,3 @@ class CommandLineProcessor
     int    argc;
     char** argv;
 };
-
-#endif  // COMMAND_LINE_PROCESSOR_H

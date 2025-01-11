@@ -3,49 +3,49 @@
 // Constructor: Move tokens into the parser
 Parser::Parser(std::vector<Token>&& tokens) : tokens(std::move(tokens)) {}
 
-std::unique_ptr<Expr> Parser::parse()
+std::unique_ptr<Expression> Parser::parse()
 {
     return parseExpression();  // Start parsing from the top-level expression
 }
 
 // Parse an expression (handles equality operators)
-std::unique_ptr<Expr> Parser::parseExpression()
+std::unique_ptr<Expression> Parser::parseExpression()
 {
     return parseBinary([this]() { return parseComparison(); }, {"==", "!="});
 }
 
 // Parse a comparison (handles >, <, >=, <=)
-std::unique_ptr<Expr> Parser::parseComparison()
+std::unique_ptr<Expression> Parser::parseComparison()
 {
     return parseBinary([this]() { return parseTerm(); }, {">", "<", ">=", "<="});
 }
 
 // Parse a term (handles + and -)
-std::unique_ptr<Expr> Parser::parseTerm()
+std::unique_ptr<Expression> Parser::parseTerm()
 {
     return parseBinary([this]() { return parseFactor(); }, {"+", "-"});
 }
 
 // Parse a factor (handles * and /)
-std::unique_ptr<Expr> Parser::parseFactor()
+std::unique_ptr<Expression> Parser::parseFactor()
 {
     return parseBinary([this]() { return parseUnary(); }, {"*", "/"});
 }
 
 // Parse unary operators
-std::unique_ptr<Expr> Parser::parseUnary()
+std::unique_ptr<Expression> Parser::parseUnary()
 {
     if (match({"!", "-"}))
     {
         Token operatorToken = tokens[current - 1];  // The matched operator
         auto  right         = parseUnary();         // Recursively parse the operand
-        return std::make_unique<Unary>(operatorToken, std::move(right));
+        return std::make_unique<Unary>(operatorToken.getLexeme(), std::move(right));
     }
     return parsePrimary();
 }
 
 // Parse a primary expression (numbers, grouped expressions, and unary operators)
-std::unique_ptr<Expr> Parser::parsePrimary()
+std::unique_ptr<Expression> Parser::parsePrimary()
 {
     Token token = peek();
 
@@ -98,8 +98,9 @@ std::unique_ptr<Expr> Parser::parsePrimary()
 }
 
 // Helper function for parsing binary expressions
-std::unique_ptr<Expr> Parser::parseBinary(std::function<std::unique_ptr<Expr>()> subParser,
-                                          const std::vector<std::string>&        operators)
+std::unique_ptr<Expression> Parser::parseBinary(
+    std::function<std::unique_ptr<Expression>()> subParser,
+    const std::vector<std::string>&              operators)
 {
     auto left = subParser();
 

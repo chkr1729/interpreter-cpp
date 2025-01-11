@@ -1,34 +1,32 @@
-#ifndef PARSER_H
-#define PARSER_H
-
+#pragma once
 #include <cstddef>
 #include <functional>
 #include <iostream>
 #include <vector>
 
+#include "../Expression/Expression.h"
 #include "../Token/Token.h"
-#include "Expr.h"
 
 class Parser
 {
    public:
     explicit Parser(std::vector<Token>&& tokens);
-    std::unique_ptr<Expr> parse();  // Returns the root of the expression tree
+    std::unique_ptr<Expression> parse();  // Returns the root of the expression tree
 
    private:
     std::vector<Token> tokens;
     size_t             current = 0;
 
     // Recursive descent parsing methods
-    std::unique_ptr<Expr> parseExpression();
-    std::unique_ptr<Expr> parseComparison();
-    std::unique_ptr<Expr> parseTerm();
-    std::unique_ptr<Expr> parseFactor();
-    std::unique_ptr<Expr> parseUnary();
-    std::unique_ptr<Expr> parsePrimary();
+    std::unique_ptr<Expression> parseExpression();
+    std::unique_ptr<Expression> parseComparison();
+    std::unique_ptr<Expression> parseTerm();
+    std::unique_ptr<Expression> parseFactor();
+    std::unique_ptr<Expression> parseUnary();
+    std::unique_ptr<Expression> parsePrimary();
 
-    std::unique_ptr<Expr> parseBinary(std::function<std::unique_ptr<Expr>()> subParser,
-                                      const std::vector<std::string>&        operators);
+    std::unique_ptr<Expression> parseBinary(std::function<std::unique_ptr<Expression>()> subParser,
+                                            const std::vector<std::string>&              operators);
 
     // Helper methods
     bool  match(const std::vector<std::string>& lexemes);
@@ -37,5 +35,3 @@ class Parser
     Token peek() const;
     bool  isAtEnd() const;
 };
-
-#endif  // PARSER_H

@@ -86,6 +86,15 @@ void Evaluator::handleNumberOperator(const std::unique_ptr<ResultBase>& leftResu
         return;
     }
 
+    // Check for relational operations
+    auto relIt = relationalOps.find(op);
+    if (relIt != relationalOps.end())
+    {
+        handleBinaryOperation<double, bool>(
+            leftResult, rightResult, "Operands must be numbers", relIt->second);
+        return;
+    }
+
     auto eqIt = equalityOps.find(op);
     if (eqIt != equalityOps.end())
     {

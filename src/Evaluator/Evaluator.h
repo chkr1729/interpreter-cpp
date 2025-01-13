@@ -39,22 +39,31 @@ class Evaluator : public Visitor
         equalityOps = {{"==", [](double lhs, double rhs) { return lhs == rhs; }},
                        {"!=", [](double lhs, double rhs) { return lhs != rhs; }}};
 
+    inline static const std::unordered_map<std::string, std::function<bool(double, double)>>
+        relationalOps = {
+            {">", [](double lhs, double rhs) { return lhs > rhs; }},
+            {"<", [](double lhs, double rhs) { return lhs < rhs; }},
+            {">=", [](double lhs, double rhs) { return lhs >= rhs; }},
+            {"<=", [](double lhs, double rhs) { return lhs <= rhs; }},
+        };
+
     void handleNumberOperator(const std::unique_ptr<ResultBase>& leftResult,
                               const std::unique_ptr<ResultBase>& rightResult,
                               const std::string&                 op);
 
-    template <typename T, typename Op>
+    template <typename OperandT, typename ReturnT = OperandT, typename Op>
     void handleBinaryOperation(const std::unique_ptr<ResultBase>& leftResult,
                                const std::unique_ptr<ResultBase>& rightResult,
                                const std::string&                 errorMsg,
                                Op                                 operation)
     {
-        auto left  = dynamic_cast<Result<T>*>(leftResult.get());
-        auto right = dynamic_cast<Result<T>*>(rightResult.get());
+        auto left  = dynamic_cast<Result<OperandT>*>(leftResult.get());
+        auto right = dynamic_cast<Result<OperandT>*>(rightResult.get());
 
         if (left && right)
         {
-            result = std::make_unique<Result<T>>(operation(left->getValue(), right->getValue()));
+            result =
+                std::make_unique<Result<ReturnT>>(operation(left->getValue(), right->getValue()));
         }
         else
         {

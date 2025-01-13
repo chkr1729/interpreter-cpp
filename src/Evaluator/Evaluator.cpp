@@ -1,8 +1,6 @@
 #include "Evaluator.h"
 
 #include <cstddef>
-#include <functional>
-#include <unordered_map>
 
 #include "../Expression/Expression.h"
 
@@ -76,24 +74,27 @@ void Evaluator::visitUnary(const Unary& unary)
     }
 }
 
-template <typename T, typename Op>
-void Evaluator::handleBinaryOperation(std::unique_ptr<ResultBase>& leftResult,
-                                      std::unique_ptr<ResultBase>& rightResult,
-                                      const std::string&           errorMsg,
-                                      Op                           operation)
+void Evaluator::handleNumberOperator(const std::unique_ptr<ResultBase>& leftResult,
+                                     const std::unique_ptr<ResultBase>& rightResult,
+                                     const std::string&                 op)
 {
-    auto left  = dynamic_cast<Result<T>*>(leftResult.get());
-    auto right = dynamic_cast<Result<T>*>(rightResult.get());
+    auto it = arithmeticOps.find(op);
+    if (it != arithmeticOps.end())
+    {
+        handleBinaryOperation<double>(
+            leftResult, rightResult, "Operands must be numbers", it->second);
+        return;
+    }
 
-    if (left && right)
+    auto eqIt = equalityOps.find(op);
+    if (eqIt != equalityOps.end())
     {
-        result = std::make_unique<Result<T>>(operation(left->getValue(), right->getValue()));
+        handleBinaryOperation<bool>(
+            leftResult, rightResult, "Operands must be numbers", eqIt->second);
+        return;
     }
-    else
-    {
-        std::cerr << "Error: " << errorMsg << std::endl;
-        result = std::make_unique<Result<std::nullptr_t>>();
-    }
+
+    return;
 }
 
 void Evaluator::visitBinary(const Binary& binary)
@@ -106,35 +107,26 @@ void Evaluator::visitBinary(const Binary& binary)
 
     auto op = binary.getOperator();
 
-    // Handle arithmetic operators
-    static const std::unordered_map<std::string, std::function<double(double, double)>>
-        arithmeticOps = {{"+", [](double lhs, double rhs) { return lhs + rhs; }},
-                         {"-", [](double lhs, double rhs) { return lhs - rhs; }},
-                         {"*", [](double lhs, double rhs) { return lhs * rhs; }},
-                         {"/", [](double lhs, double rhs) {
-                              if (rhs == 0.0) throw std::runtime_error("Division by zero");
-                              return lhs / rhs;
-                          }}};
-
-    auto it = arithmeticOps.find(op);
-    if (it != arithmeticOps.end())
+    if (dynamic_cast<Result<double>*>(leftResult.get()) &&
+        dynamic_cast<Result<double>*>(rightResult.get()))
     {
-        handleBinaryOperation<double>(
-            leftResult, rightResult, "Operands must be numbers", it->second);
+        handleNumberOperator(leftResult, rightResult, op);
         return;
     }
 
-    // Handle equality operators
-    static const std::unordered_map<std::string, std::function<bool(double, double)>> equalityOps =
-        {{"==", [](double lhs, double rhs) { return lhs == rhs; }},
-         {"!=", [](double lhs, double rhs) { return lhs != rhs; }}};
-
-    auto eqIt = equalityOps.find(op);
-    if (eqIt != equalityOps.end())
+    // Handle string operators
+    else if (dynamic_cast<Result<std::string>*>(leftResult.get()) &&
+             dynamic_cast<Result<std::string>*>(rightResult.get()))
     {
-        handleBinaryOperation<double>(
-            leftResult, rightResult, "Operands must be numbers", eqIt->second);
-        return;
+        if (op == "+")
+        {
+            handleBinaryOperation<std::string>(
+                leftResult,
+                rightResult,
+                "Operands must be strings",
+                [](const std::string& left, const std::string& right) { return left + right; });
+            return;
+        }
     }
 
     std::cerr << "Error: Unknown operator '" << op << "'" << std::endl;

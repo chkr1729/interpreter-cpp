@@ -51,9 +51,13 @@ void Evaluator::visitUnary(const Unary& unary)
         {
             result = std::make_unique<Result<bool>>(!boolResult->getValue());
         }
+        else if (dynamic_cast<Result<std::nullptr_t>*>(result.get()))
+        {
+            result = std::make_unique<Result<bool>>(true);
+        }
         else
         {
-            std::cerr << "Error: Operand of '!' must be a boolean" << std::endl;
+            std::cerr << "Error: Operand of '!' must be a boolean or nil" << std::endl;
             result = std::make_unique<Result<std::nullptr_t>>();
         }
     }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <optional>
 
 class ResultBase
 {
@@ -12,7 +13,7 @@ class ResultBase
 template <typename T>
 class Result : public ResultBase
 {
-   protected:
+   private:
     T value;
 
    public:

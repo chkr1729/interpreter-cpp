@@ -15,18 +15,28 @@ class Expression
     virtual void accept(Visitor& visitor) const = 0;
 };
 
+// Enum to represent the type of a literal
+enum class LiteralType
+{
+    Number,
+    String,
+    Boolean
+};
+
 // Concrete subclass for literal expressions
 class Literal : public Expression
 {
    public:
-    explicit Literal(const std::string& value) : value(value) {}
+    Literal(const std::string& value, LiteralType type) : value(value), type(type) {}
 
     void accept(Visitor& visitor) const override { visitor.visitLiteral(*this); }
 
     const std::string& getValue() const { return value; }
+    LiteralType        getType() const { return type; }
 
    private:
     std::string value;
+    LiteralType type;
 };
 
 // Concrete subclass for grouping expressions

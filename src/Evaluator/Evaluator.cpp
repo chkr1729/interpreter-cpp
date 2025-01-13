@@ -10,10 +10,18 @@
 void Evaluator::visitLiteral(const Literal& literal)
 {
     const std::string& value = literal.getValue();
-    if (value == "true")
-        result = std::make_unique<Result<bool>>(true);
-    else if (value == "false")
-        result = std::make_unique<Result<bool>>(false);
+    if (literal.getType() == LiteralType::Boolean && value != "nil")
+    {
+        result = std::make_unique<Result<bool>>(value == "true" ? true : false);
+    }
+    else if (literal.getType() == LiteralType::String)
+    {
+        result = std::make_unique<Result<std::string>>(value);
+    }
+    else if (literal.getType() == LiteralType::Number)
+    {
+        result = std::make_unique<Result<double>>(std::stod(value));
+    }
     else if (value == "nil")
         result = std::make_unique<Result<std::nullptr_t>>();
     else

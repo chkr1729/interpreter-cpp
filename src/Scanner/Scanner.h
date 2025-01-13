@@ -1,6 +1,4 @@
-#ifndef SCANNER_H
-#define SCANNER_H
-
+#pragma once
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -61,6 +59,9 @@ class Scanner
 
     // Token maps
     // TODO: Combine these maps
+
+    inline static const std::unordered_set<std::string> booleanLiterals = {"true", "false", "nil"};
+
     inline static const std::unordered_map<char, std::string> tokenMap = {
         {'(', "LEFT_PAREN ( null"},
         {')', "RIGHT_PAREN ) null"},
@@ -102,5 +103,3 @@ class Scanner
         {"var", "VAR"},
         {"while", "WHILE"}};
 };
-
-#endif  // SCANNER_H

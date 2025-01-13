@@ -1,6 +1,4 @@
-#ifndef TOKEN_H
-#define TOKEN_H
-
+#pragma once
 #include <iostream>
 #include <string>
 #include <unordered_set>
@@ -14,6 +12,7 @@ enum class TokenType
     SingleCharToken,
     StringLiteral,
     NumberLiteral,
+    BooleanLiteral,
     Identifier,
     ReservedWord,
     Unexpected
@@ -41,9 +40,6 @@ class Token
     // Check if the token's lexeme contains a newline character
     bool hasNewLine() const { return lexeme.find('\n') != std::string::npos; }
 
-    bool isBooleanLiteral() const { return booleanLiterals.find(lexeme) != booleanLiterals.end(); }
-    bool isUnaryOperator() const { return unaryOperators.find(lexeme) != unaryOperators.end(); }
-
     size_t size() const { return lexeme.size(); }
 
    private:
@@ -53,9 +49,4 @@ class Token
     std::string literal;
     int         lineNumber;
     bool        error;
-
-    inline static const std::unordered_set<std::string> booleanLiterals = {"true", "false", "nil"};
-    inline static const std::unordered_set<std::string> unaryOperators  = {"!", "-"};
 };
-
-#endif  // TOKEN_H

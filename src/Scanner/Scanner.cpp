@@ -114,6 +114,10 @@ Token Scanner::getIdentifierAndReservedWordToken() const
     std::string word = extractWordToken();
     if (reservedWords.find(word) != reservedWords.end())
     {
+        if (booleanLiterals.find(word) != booleanLiterals.end())
+        {
+            return Token(TokenType::BooleanLiteral, word, "null", lineNum, false);
+        }
         return Token(TokenType::ReservedWord, word, "null", lineNum, false);
     }
     return Token(TokenType::Identifier, word, "null", lineNum, false);
@@ -195,7 +199,7 @@ Token Scanner::getToken() const
         return getNumberLiteralToken();
     }
 
-    // word = identifier + reserved word
+    // word = identifier + reserved word(including boolean literals)
     if (isWordToken())
     {
         return getIdentifierAndReservedWordToken();
@@ -272,6 +276,7 @@ void Scanner::print(Token token)
             std::cout << "IDENTIFIER " << token.getLexeme() << " " << token.getLiteral()
                       << std::endl;
             break;
+        case TokenType::BooleanLiteral:
         case TokenType::ReservedWord:
             std::cout << reservedWords.at(token.getLexeme()) << " " << token.getLexeme() << " "
                       << token.getLiteral() << std::endl;

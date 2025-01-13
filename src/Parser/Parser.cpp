@@ -66,7 +66,7 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     if (token.getType() == TokenType::NumberLiteral)
     {
         Token numberToken = advance();  // Consume the number token
-        return std::make_unique<Literal>(numberToken.getLiteral());
+        return std::make_unique<Literal>(numberToken.getLiteral(), LiteralType::Number);
     }
 
     if (token.getType() == TokenType::StringLiteral)
@@ -79,17 +79,13 @@ std::unique_ptr<Expression> Parser::parsePrimary()
         }
 
         Token stringToken = advance();  // Consume the string token
-        return std::make_unique<Literal>(stringToken.getLiteral());
+        return std::make_unique<Literal>(stringToken.getLiteral(), LiteralType::String);
     }
 
-    if (token.getType() == TokenType::ReservedWord)
+    if (token.getType() == TokenType::BooleanLiteral)
     {
-        if (token.getLexeme() == "true" || token.getLexeme() == "false" ||
-            token.getLexeme() == "nil")
-        {
-            Token reservedToken = advance();  // Consume the literal token
-            return std::make_unique<Literal>(reservedToken.getLexeme());
-        }
+        Token booleanToken = advance();  // Consume the literal token
+        return std::make_unique<Literal>(booleanToken.getLexeme(), LiteralType::Boolean);
     }
 
     std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;

@@ -1,8 +1,8 @@
-#ifndef PRINT_VISITOR_H
-#define PRINT_VISITOR_H
 
+#pragma once
 #include <iostream>
 
+#include "../Expression/Expression.h"
 #include "../Expression/Visitor.h"
 
 class PrintVisitor : public Visitor
@@ -33,4 +33,3 @@ class PrintVisitor : public Visitor
         std::cout << ")";
     }
 };
-#endif  // PRINT_VISITOR_H

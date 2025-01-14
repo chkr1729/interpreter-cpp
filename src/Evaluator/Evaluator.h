@@ -79,8 +79,8 @@ class Evaluator : public Visitor
         }
         else
         {
-            std::cerr << "Error: " << errorMsg << std::endl;
-            result = std::make_unique<Result<std::nullptr_t>>();
+            std::cerr << errorMsg << std::endl;
+            std::exit(70);
         }
     }
 };

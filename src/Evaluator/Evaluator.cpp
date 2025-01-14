@@ -115,7 +115,7 @@ void Evaluator::handleNumberOperator(const std::unique_ptr<ResultBase>& leftResu
     if (eqIt != equalityOps<double>.end())
     {
         handleBinaryOperation<double, bool>(
-            leftResult, rightResult, "Operands must be numbers", eqIt->second);
+            leftResult, rightResult, "Operands must be numbers.", eqIt->second);
         return;
     }
 
@@ -142,6 +142,8 @@ void Evaluator::handleStringOperator(const std::unique_ptr<ResultBase>& leftResu
             [](const std::string& left, const std::string& right) { return left + right; });
         return;
     }
+    std::cerr << "Incompatible types for '" << op << "'" << std::endl;
+    std::exit(70);
 }
 
 void Evaluator::handleIncompatibleTypes(const std::string& op)
@@ -156,8 +158,8 @@ void Evaluator::handleIncompatibleTypes(const std::string& op)
         result = std::make_unique<Result<bool>>(true);
         return;
     }
-    std::cerr << "Error: Incompatible types for '" << op << "'" << std::endl;
-    result = std::make_unique<Result<std::nullptr_t>>();
+    std::cerr << "Incompatible types for '" << op << "'" << std::endl;
+    std::exit(70);
 }
 
 void Evaluator::visitBinary(const Binary& binary)

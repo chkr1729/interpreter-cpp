@@ -70,8 +70,8 @@ void Evaluator::handleMinusOperator()
     }
     else
     {
-        std::cerr << "Error: Operand of '-' must be a number" << std::endl;
-        result = std::make_unique<Result<std::nullptr_t>>();
+        std::cerr << "Operand must be a number" << std::endl;
+        std::exit(70);
     }
 }
 

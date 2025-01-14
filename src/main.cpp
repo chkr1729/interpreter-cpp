@@ -3,7 +3,7 @@
 #include "CommandLineArgs/CommandLineProcessor.h"
 #include "Evaluator/Evaluator.h"
 #include "Parser/Parser.h"
-#include "Parser/PrintVisitor.h"
+#include "Parser/PrintExpressionVisitor.h"
 #include "Scanner/Scanner.h"
 
 int main(int argc, char* argv[])
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
     if (command == "parse")
     {
-        PrintVisitor printer;
+        PrintExpressionVisitor printer;
         expression->accept(printer);
         return 0;
     }

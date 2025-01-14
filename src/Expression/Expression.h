@@ -3,7 +3,7 @@
 #include <string>
 
 #include "../Token/Token.h"
-#include "Visitor.h"
+#include "ExpressionVisitor.h"
 
 // Abstract base class for expressions
 class Expression
@@ -12,7 +12,7 @@ class Expression
     virtual ~Expression() = default;
 
     // Accept a visitor
-    virtual void accept(Visitor& visitor) const = 0;
+    virtual void accept(ExpressionVisitor& visitor) const = 0;
 };
 
 // Enum to represent the type of a literal
@@ -30,7 +30,7 @@ class Literal : public Expression
    public:
     Literal(const std::string& value, LiteralType type) : value(value), type(type) {}
 
-    void accept(Visitor& visitor) const override { visitor.visitLiteral(*this); }
+    void accept(ExpressionVisitor& visitor) const override { visitor.visitLiteral(*this); }
 
     const std::string& getValue() const { return value; }
     LiteralType        getType() const { return type; }
@@ -46,7 +46,7 @@ class Grouping : public Expression
    public:
     explicit Grouping(std::unique_ptr<Expression> expression) : expression(std::move(expression)) {}
 
-    void accept(Visitor& visitor) const override { visitor.visitGrouping(*this); }
+    void accept(ExpressionVisitor& visitor) const override { visitor.visitGrouping(*this); }
 
     const Expression* getExpression() const { return expression.get(); }
 
@@ -66,7 +66,7 @@ class Unary : public Expression
     const std::string& getOperator() const { return op; }
     const Expression*  getRight() const { return right.get(); }
 
-    void accept(Visitor& visitor) const override { visitor.visitUnary(*this); }
+    void accept(ExpressionVisitor& visitor) const override { visitor.visitUnary(*this); }
 
    private:
     std::string                 op;
@@ -84,7 +84,7 @@ class Binary : public Expression
     {
     }
 
-    void accept(Visitor& visitor) const override { visitor.visitBinary(*this); }
+    void accept(ExpressionVisitor& visitor) const override { visitor.visitBinary(*this); }
 
     const Expression*  getLeft() const { return left.get(); }
     const std::string& getOperator() const { return op; }

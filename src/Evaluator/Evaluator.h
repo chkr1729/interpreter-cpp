@@ -6,10 +6,10 @@
 #include <unordered_map>
 #include <variant>
 
-#include "../Expression/Visitor.h"
+#include "../Expression/ExpressionVisitor.h"
 #include "Result.h"
 
-class Evaluator : public Visitor
+class Evaluator : public ExpressionVisitor
 {
    public:
     const std::unique_ptr<ResultBase>& getResult() const { return result; }

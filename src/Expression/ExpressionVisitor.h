@@ -6,7 +6,7 @@ class Grouping;
 class Binary;
 class Unary;
 
-class Visitor
+class ExpressionVisitor
 {
    public:
     virtual void visitLiteral(const Literal& expr)   = 0;

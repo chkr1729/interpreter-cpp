@@ -3,9 +3,8 @@
 #include <iostream>
 
 #include "../Expression/Expression.h"
-#include "../Expression/Visitor.h"
 
-class PrintVisitor : public Visitor
+class PrintExpressionVisitor : public ExpressionVisitor
 {
    public:
     void visitLiteral(const Literal& expr) override { std::cout << expr.getValue(); }

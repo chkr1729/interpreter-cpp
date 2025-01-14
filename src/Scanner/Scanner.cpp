@@ -118,6 +118,10 @@ Token Scanner::getIdentifierAndReservedWordToken() const
         {
             return Token(TokenType::BooleanLiteral, word, "null", lineNum, false);
         }
+        else if (word == "nil")
+        {
+            return Token(TokenType::NilLiteral, word, "null", lineNum, false);
+        }
         return Token(TokenType::ReservedWord, word, "null", lineNum, false);
     }
     return Token(TokenType::Identifier, word, "null", lineNum, false);
@@ -277,6 +281,7 @@ void Scanner::print(Token token)
                       << std::endl;
             break;
         case TokenType::BooleanLiteral:
+        case TokenType::NilLiteral:
         case TokenType::ReservedWord:
             std::cout << reservedWords.at(token.getLexeme()) << " " << token.getLexeme() << " "
                       << token.getLiteral() << std::endl;

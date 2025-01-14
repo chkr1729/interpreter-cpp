@@ -87,6 +87,11 @@ std::unique_ptr<Expression> Parser::parsePrimary()
         Token booleanToken = advance();  // Consume the literal token
         return std::make_unique<Literal>(booleanToken.getLexeme(), LiteralType::Boolean);
     }
+    if (token.getType() == TokenType::NilLiteral)
+    {
+        Token nilToken = advance();  // Consume the literal token
+        return std::make_unique<Literal>(nilToken.getLexeme(), LiteralType::Nil);
+    }
 
     std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;
     advance();  // Consume the unexpected token to prevent infinite loop

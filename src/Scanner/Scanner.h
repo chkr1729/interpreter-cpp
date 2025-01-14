@@ -60,7 +60,7 @@ class Scanner
     // Token maps
     // TODO: Combine these maps
 
-    inline static const std::unordered_set<std::string> booleanLiterals = {"true", "false", "nil"};
+    inline static const std::unordered_set<std::string> booleanLiterals = {"true", "false"};
 
     inline static const std::unordered_map<char, std::string> tokenMap = {
         {'(', "LEFT_PAREN ( null"},

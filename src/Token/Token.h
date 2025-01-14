@@ -13,6 +13,7 @@ enum class TokenType
     StringLiteral,
     NumberLiteral,
     BooleanLiteral,
+    NilLiteral,
     Identifier,
     ReservedWord,
     Unexpected

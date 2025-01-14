@@ -20,7 +20,8 @@ enum class LiteralType
 {
     Number,
     String,
-    Boolean
+    Boolean,
+    Nil
 };
 
 // Concrete subclass for literal expressions

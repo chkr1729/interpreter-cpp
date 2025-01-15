@@ -35,12 +35,11 @@ int main(int argc, char* argv[])
 
     // Step 2: Parse the tokens into statements
     Parser parser(scanner.getTokens());
-    auto   statements = parser.parse();
-
-    if (statements.empty())
+    auto   statements   = parser.parse();
+    int    parserRetVal = parser.getRetVal();
+    if (statements.size() < 2 && parserRetVal)
     {
-        std::cerr << "Parsing failed due to errors." << std::endl;
-        return 65;
+        return parserRetVal;
     }
 
     // Step 3: Handle commands

@@ -10,7 +10,6 @@ void Evaluator::visitPrintStatement(PrintStatement& statement)
 {
     statement.getExpression().accept(*this);
     result->print();
-    std::cout << std::endl;
 }
 
 // Visit a literal expression
@@ -47,7 +46,6 @@ void Evaluator::visitExpressionStatement(ExpressionStatement& statement)
 {
     statement.getExpression().accept(*this);
     result->print();
-    std::cout << std::endl;
 }
 
 void Evaluator::handleBangOperator()
@@ -168,6 +166,22 @@ void Evaluator::handleStringOperator(const std::unique_ptr<ResultBase>& leftResu
     std::exit(70);
 }
 
+void Evaluator::handleBoolOperator(const std::unique_ptr<ResultBase>& leftResult,
+                                   const std::unique_ptr<ResultBase>& rightResult,
+                                   const std::string&                 op)
+{
+    auto eqIt = equalityOps<bool>.find(op);
+    if (eqIt != equalityOps<bool>.end())
+    {
+        handleBinaryOperation<bool, bool>(
+            leftResult, rightResult, "Operands must be booleans", eqIt->second);
+        return;
+    }
+
+    std::cerr << "Error: Unsupported operator '" << op << "' for booleans" << std::endl;
+    std::exit(70);
+}
+
 void Evaluator::handleIncompatibleTypes(const std::string& op)
 {
     if (op == "==" || op == "!=")
@@ -203,6 +217,14 @@ void Evaluator::visitBinary(const Binary& binary)
         dynamic_cast<Result<std::string>*>(rightResult.get()))
     {
         handleStringOperator(leftResult, rightResult, op);
+        return;
+    }
+
+    // Handle bools
+    if (dynamic_cast<Result<bool>*>(leftResult.get()) &&
+        dynamic_cast<Result<bool>*>(rightResult.get()))
+    {
+        handleBoolOperator(leftResult, rightResult, op);
         return;
     }
 

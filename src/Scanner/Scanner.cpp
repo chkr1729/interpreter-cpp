@@ -31,13 +31,14 @@ Token Scanner::getCommentToken() const
 Token Scanner::getStringLiteralToken() const
 {
     size_t startIndex = index + 1;
-    size_t endIndex   = fileContents.find_first_of("\"\n", startIndex);
+    size_t endIndex   = fileContents.find_first_of("\"", startIndex);
 
-    if (endIndex == std::string::npos || fileContents[endIndex] == '\n')
+    if (endIndex == std::string::npos)
     {
+        endIndex = fileContents.size();
         return Token(TokenType::StringLiteral,
-                     fileContents.substr(index, fileContents.size() - index),
-                     "null",
+                     fileContents.substr(index, endIndex - index),
+                     fileContents.substr(index + 1, endIndex - index - 1),
                      lineNum,
                      true);
     }

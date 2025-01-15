@@ -90,7 +90,9 @@ std::unique_ptr<Grouping> Parser::parseGrouping()
     if (!match({")"}))
     {
         std::cerr << "Error: Missing closing parenthesis" << std::endl;
-        std::exit(65);
+        retVal = 65;
+        advance();
+        return nullptr;
     }
     return std::make_unique<Grouping>(std::move(expression));
 }
@@ -106,7 +108,7 @@ std::unique_ptr<Literal> Parser::parseStringLiteral(bool error)
     if (error)
     {
         std::cerr << "Unterminated string literal" << std::endl;
-        std::exit(65);
+        retVal = 65;
     }
 
     Token stringToken = advance();  // Consume the string token
@@ -159,7 +161,9 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     }
 
     std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;
-    std::exit(65);
+    retVal = 65;
+    advance();
+    return nullptr;
 }
 
 // Helper function for parsing binary expressions

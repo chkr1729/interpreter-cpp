@@ -66,6 +66,10 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
                               const std::unique_ptr<ResultBase>& rightResult,
                               const std::string&                 op);
 
+    void handleBoolOperator(const std::unique_ptr<ResultBase>& leftResult,
+                            const std::unique_ptr<ResultBase>& rightResult,
+                            const std::string&                 op);
+
     void handleIncompatibleTypes(const std::string& op);
 
     template <typename OperandT, typename ReturnT = OperandT, typename Op>

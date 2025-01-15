@@ -21,7 +21,8 @@ Token Scanner::getCommentToken() const
     {
         endIndex = fileContents.size();
     }
-    return {TokenType::Comment,
+    return {TokenCategory::Space,
+            TokenType::Comment,
             fileContents.substr(index, endIndex + 1 - index),
             "null",
             lineNum,
@@ -36,14 +37,16 @@ Token Scanner::getStringLiteralToken() const
     if (endIndex == std::string::npos)
     {
         endIndex = fileContents.size();
-        return Token(TokenType::StringLiteral,
+        return Token(TokenCategory::Literal,
+                     TokenType::StringLiteral,
                      fileContents.substr(index, endIndex - index),
                      fileContents.substr(index + 1, endIndex - index - 1),
                      lineNum,
                      true);
     }
 
-    return Token(TokenType::StringLiteral,
+    return Token(TokenCategory::Literal,
+                 TokenType::StringLiteral,
                  fileContents.substr(index, endIndex - index + 1),
                  fileContents.substr(index + 1, endIndex - index - 1),
                  lineNum,
@@ -94,7 +97,12 @@ Token Scanner::getNumberLiteralToken() const
         lexeme += ("." + *afterDecimal);
     }
 
-    return Token(TokenType::NumberLiteral, lexeme, formatNumberLiteral(lexeme), lineNum, false);
+    return Token(TokenCategory::Literal,
+                 TokenType::NumberLiteral,
+                 lexeme,
+                 formatNumberLiteral(lexeme),
+                 lineNum,
+                 false);
 }
 
 std::string Scanner::extractWordToken() const
@@ -117,15 +125,17 @@ Token Scanner::getIdentifierAndReservedWordToken() const
     {
         if (booleanLiterals.find(word) != booleanLiterals.end())
         {
-            return Token(TokenType::BooleanLiteral, word, "null", lineNum, false);
+            return Token(
+                TokenCategory::Literal, TokenType::BooleanLiteral, word, "null", lineNum, false);
         }
         else if (word == "nil")
         {
-            return Token(TokenType::NilLiteral, word, "null", lineNum, false);
+            return Token(
+                TokenCategory::Literal, TokenType::NilLiteral, word, "null", lineNum, false);
         }
-        return Token(TokenType::ReservedWord, word, "null", lineNum, false);
+        return Token(TokenCategory::Word, TokenType::ReservedWord, word, "null", lineNum, false);
     }
-    return Token(TokenType::Identifier, word, "null", lineNum, false);
+    return Token(TokenCategory::Word, TokenType::Identifier, word, "null", lineNum, false);
 }
 
 bool Scanner::isWhiteSpaceToken() const
@@ -167,7 +177,12 @@ Token Scanner::getToken() const
 {
     if (isWhiteSpaceToken())
     {
-        return {TokenType::Whitespace, std::string(1, fileContents[index]), "null", lineNum, false};
+        return {TokenCategory::Space,
+                TokenType::Whitespace,
+                std::string(1, fileContents[index]),
+                "null",
+                lineNum,
+                false};
     }
 
     if (isCommentToken())
@@ -178,7 +193,8 @@ Token Scanner::getToken() const
     const size_t multiCharSize = 2;
     if (isMultiCharToken(multiCharSize))
     {
-        return {TokenType::MultiCharToken,
+        return {TokenCategory::Operator,
+                TokenType::MultiCharOperator,
                 fileContents.substr(index, multiCharSize),
                 "null",
                 lineNum,
@@ -187,7 +203,8 @@ Token Scanner::getToken() const
 
     if (isSingleCharToken())
     {
-        return {TokenType::SingleCharToken,
+        return {TokenCategory::Operator,
+                TokenType::SingleCharOperator,
                 std::string(1, fileContents[index]),
                 "null",
                 lineNum,
@@ -211,7 +228,12 @@ Token Scanner::getToken() const
     }
 
     // If none of the above, it's an unexpected character
-    return Token(TokenType::Unexpected, std::string(1, fileContents[index]), "null", lineNum, true);
+    return Token(TokenCategory::Unexpected,
+                 TokenType::Unexpected,
+                 std::string(1, fileContents[index]),
+                 "null",
+                 lineNum,
+                 true);
 }
 
 // Main processing function
@@ -219,20 +241,19 @@ void Scanner::process()
 {
     while (index < fileContents.size())
     {
-        auto token     = getToken();
-        auto tokenType = token.getType();
+        auto token = getToken();
+
         assert(token.size() > 0);
+
         index += token.size();
-        if (token.hasNewLine())
-        {
-            lineNum++;
-        }
+        lineNum += token.countNewLines();
+
         if (token.hasError())
         {
             retVal = 65;
         }
         // We will not add whitespace or comment tokens
-        if (tokenType == TokenType::Whitespace || tokenType == TokenType::Comment)
+        if (token.getCategory() == TokenCategory::Space)
         {
             continue;
         }
@@ -256,10 +277,10 @@ void Scanner::print(Token token)
         case TokenType::Whitespace:
         case TokenType::Comment:
             break;
-        case TokenType::MultiCharToken:
+        case TokenType::MultiCharOperator:
             std::cout << multiTokenMap.at(token.getLexeme()) << std::endl;
             break;
-        case TokenType::SingleCharToken:
+        case TokenType::SingleCharOperator:
             std::cout << tokenMap.at(token.getLexeme().front()) << std::endl;
             break;
         case TokenType::StringLiteral:

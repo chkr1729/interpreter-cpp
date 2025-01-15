@@ -35,9 +35,12 @@ int main(int argc, char* argv[])
 
     // Step 2: Parse the tokens into statements
     Parser parser(scanner.getTokens());
-    auto   statements   = parser.parse();
-    int    parserRetVal = parser.getRetVal();
-    if (statements.size() < 2 && parserRetVal)
+
+    auto statements = parser.parse();
+
+    // If parsing failed, we exit
+    int parserRetVal = parser.getRetVal();
+    if (parserRetVal)
     {
         return parserRetVal;
     }

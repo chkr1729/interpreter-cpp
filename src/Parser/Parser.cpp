@@ -11,7 +11,11 @@ std::vector<std::unique_ptr<Statement>> Parser::parse()
     std::vector<std::unique_ptr<Statement>> statements;
     while (!isAtEnd())
     {
-        statements.push_back(parseStatement());
+        auto statement = parseStatement();
+        if (statement)
+        {
+            statements.push_back(std::move(statement));
+        }
     }
     return statements;
 }
@@ -41,11 +45,15 @@ std::unique_ptr<PrintStatement> Parser::parsePrintStatement()
 std::unique_ptr<ExpressionStatement> Parser::parseExpressionStatement()
 {
     auto expression = parseExpression();
-    if (!isAtEnd() && !match({";"}))
+    if (isAtEnd())
+    {
+        return std::make_unique<ExpressionStatement>(std::move(expression), true);
+    }
+    if (!match({";"}))
     {
         std::cerr << "Error: Missing ';' after expression statement." << std::endl;
     }
-    return std::make_unique<ExpressionStatement>(std::move(expression));
+    return std::make_unique<ExpressionStatement>(std::move(expression), false);
 }
 
 // Parse an expression (handles equality operators)

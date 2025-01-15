@@ -8,8 +8,12 @@
 
 void Evaluator::visitPrintStatement(PrintStatement& statement)
 {
-    statement.getExpression().accept(*this);
-    result->print();
+    auto expr = statement.getExpression();
+    if (expr)
+    {
+        expr->accept(*this);
+        result->print();
+    }
 }
 
 // Visit a literal expression
@@ -44,8 +48,15 @@ void Evaluator::visitLiteral(const Literal& literal)
 // Visit an expression statement
 void Evaluator::visitExpressionStatement(ExpressionStatement& statement)
 {
-    statement.getExpression().accept(*this);
-    result->print();
+    auto expr = statement.getExpression();
+    if (expr)
+    {
+        expr->accept(*this);
+    }
+    if (statement.toPrint())
+    {
+        result->print();
+    }
 }
 
 void Evaluator::handleBangOperator()

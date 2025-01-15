@@ -3,8 +3,8 @@
 #include "CommandLineArgs/CommandLineProcessor.h"
 #include "Evaluator/Evaluator.h"
 #include "Parser/Parser.h"
+#include "Printer/Printer.h"
 #include "Scanner/Scanner.h"
-#include "Statement/PrintStatementVisitor.h"
 #include "Statement/Statement.h"
 
 int main(int argc, char* argv[])
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
         // Print each parsed statement
         for (const auto& statement : statements)
         {
-            PrintStatementVisitor printer;
+            Printer printer;
             statement->accept(printer);
         }
         return 0;

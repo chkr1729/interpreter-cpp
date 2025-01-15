@@ -18,17 +18,19 @@ class Statement
 class ExpressionStatement : public Statement
 {
    public:
-    explicit ExpressionStatement(std::unique_ptr<Expression> expression)
-        : expression(std::move(expression))
+    ExpressionStatement(std::unique_ptr<Expression> expression, bool print)
+        : expression(std::move(expression)), print(print)
     {
     }
 
     void accept(StatementVisitor& visitor) override { visitor.visitExpressionStatement(*this); }
 
-    Expression& getExpression() { return *expression; }
+    const Expression* getExpression() { return expression.get(); }
+    bool              toPrint() const { return print; }
 
    private:
     std::unique_ptr<Expression> expression;
+    bool                        print;
 };
 
 // Print statement class
@@ -42,7 +44,7 @@ class PrintStatement : public Statement
 
     void accept(StatementVisitor& visitor) override { visitor.visitPrintStatement(*this); }
 
-    Expression& getExpression() { return *expression; }
+    const Expression* getExpression() { return expression.get(); }
 
    private:
     std::unique_ptr<Expression> expression;

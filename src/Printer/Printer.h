@@ -3,10 +3,9 @@
 
 #include "../Expression/Expression.h"
 #include "../Expression/ExpressionVisitor.h"
-#include "StatementVisitor.h"
+#include "../Statement/StatementVisitor.h"
 
-// Forward declare classes
-class PrintStatementVisitor : public StatementVisitor, public ExpressionVisitor
+class Printer : public StatementVisitor, public ExpressionVisitor
 {
    public:
     void visitPrintStatement(PrintStatement& statement) override;

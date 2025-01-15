@@ -1,11 +1,51 @@
 #include "Parser.h"
 
+#include <memory>
+
 // Constructor: Move tokens into the parser
 Parser::Parser(std::vector<Token>&& tokens) : tokens(std::move(tokens)) {}
 
-std::unique_ptr<Expression> Parser::parse()
+// Main parse method: returns a list of statements
+std::vector<std::unique_ptr<Statement>> Parser::parse()
 {
-    return parseExpression();  // Start parsing from the top-level expression
+    std::vector<std::unique_ptr<Statement>> statements;
+    while (!isAtEnd())
+    {
+        statements.push_back(parseStatement());
+    }
+    return statements;
+}
+
+// Parse a statement
+std::unique_ptr<Statement> Parser::parseStatement()
+{
+    if (match({"print"}))
+    {
+        return parsePrintStatement();
+    }
+    return parseExpressionStatement();
+}
+
+// Parse a print statement
+std::unique_ptr<PrintStatement> Parser::parsePrintStatement()
+{
+    auto expression = parseExpression();
+    if (!match({";"}))
+    {
+        std::cerr << "Error: Missing ';' after print statement." << std::endl;
+    }
+    return std::make_unique<PrintStatement>(std::move(expression));
+}
+
+// Parse an expression statement
+std::unique_ptr<ExpressionStatement> Parser::parseExpressionStatement()
+{
+    auto expression = parseExpression();
+    if (!isAtEnd() && !match({";"}))
+    {
+        std::cerr << "Error: Missing ';' after expression statement." << std::endl;
+    }
+    return std::make_unique<ExpressionStatement>(std::move(expression));
 }
 
 // Parse an expression (handles equality operators)
@@ -44,58 +84,82 @@ std::unique_ptr<Expression> Parser::parseUnary()
     return parsePrimary();
 }
 
+std::unique_ptr<Grouping> Parser::parseGrouping()
+{
+    auto expression = parseExpression();
+    if (!match({")"}))
+    {
+        std::cerr << "Error: Missing closing parenthesis" << std::endl;
+        std::exit(65);
+    }
+    return std::make_unique<Grouping>(std::move(expression));
+}
+
+std::unique_ptr<Literal> Parser::parseNumberLiteral()
+{
+    Token numberToken = advance();  // Consume the number token
+    return std::make_unique<Literal>(numberToken.getLiteral(), LiteralType::Number);
+}
+
+std::unique_ptr<Literal> Parser::parseStringLiteral(bool error)
+{
+    if (error)
+    {
+        std::cerr << "Unterminated string literal" << std::endl;
+        std::exit(65);
+    }
+
+    Token stringToken = advance();  // Consume the string token
+    return std::make_unique<Literal>(stringToken.getLiteral(), LiteralType::String);
+}
+
+std::unique_ptr<Literal> Parser::parseBooleanLiteral()
+{
+    Token booleanToken = advance();  // Consume the literal token
+    return std::make_unique<Literal>(booleanToken.getLexeme(), LiteralType::Boolean);
+}
+
+std::unique_ptr<Literal> Parser::parseNilLiteral()
+{
+    Token nilToken = advance();  // Consume the literal token
+    return std::make_unique<Literal>(nilToken.getLexeme(), LiteralType::Nil);
+}
+
 // Parse a primary expression (numbers, grouped expressions, and unary operators)
 std::unique_ptr<Expression> Parser::parsePrimary()
 {
-    Token token = peek();
+    Token token     = peek();
+    auto  tokenType = token.getType();
 
     // Handle grouped expressions
     if (match({"("}))
     {
-        auto expression = parseExpression();
-        if (!match({")"}))
-        {
-            std::cerr << "Error: Missing closing parenthesis" << std::endl;
-            advance();
-            return nullptr;
-        }
-        return std::make_unique<Grouping>(std::move(expression));
+        return parseGrouping();
     }
 
     // Handle literals
-    if (token.getType() == TokenType::NumberLiteral)
+    if (tokenType == TokenType::NumberLiteral)
     {
-        Token numberToken = advance();  // Consume the number token
-        return std::make_unique<Literal>(numberToken.getLiteral(), LiteralType::Number);
+        return parseNumberLiteral();
     }
 
-    if (token.getType() == TokenType::StringLiteral)
+    if (tokenType == TokenType::StringLiteral)
     {
-        if (token.hasError())
-        {
-            std::cerr << "Unterminated string literal" << std::endl;
-            advance();
-            return nullptr;
-        }
-
-        Token stringToken = advance();  // Consume the string token
-        return std::make_unique<Literal>(stringToken.getLiteral(), LiteralType::String);
+        return parseStringLiteral(token.hasError());
     }
 
     if (token.getType() == TokenType::BooleanLiteral)
     {
-        Token booleanToken = advance();  // Consume the literal token
-        return std::make_unique<Literal>(booleanToken.getLexeme(), LiteralType::Boolean);
+        return parseBooleanLiteral();
     }
+
     if (token.getType() == TokenType::NilLiteral)
     {
-        Token nilToken = advance();  // Consume the literal token
-        return std::make_unique<Literal>(nilToken.getLexeme(), LiteralType::Nil);
+        return parseNilLiteral();
     }
 
     std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;
-    advance();  // Consume the unexpected token to prevent infinite loop
-    return nullptr;
+    std::exit(65);
 }
 
 // Helper function for parsing binary expressions

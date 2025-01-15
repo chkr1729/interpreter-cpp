@@ -1,23 +1,28 @@
-// Evaluator.h
-// TODO: Use pragma once in all header files
 #pragma once
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <unordered_map>
 #include <variant>
 
 #include "../Expression/ExpressionVisitor.h"
+#include "../Statement/StatementVisitor.h"  // Include StatementVisitor
 #include "Result.h"
 
-class Evaluator : public ExpressionVisitor
+class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit both visitors
 {
    public:
     const std::unique_ptr<ResultBase>& getResult() const { return result; }
 
+    // Expression visitor methods
     void visitLiteral(const Literal& literal) override;
     void visitUnary(const Unary& unary) override;
     void visitBinary(const Binary& binary) override;
     void visitGrouping(const Grouping& grp) override;
+
+    // Statement visitor methods
+    void visitPrintStatement(PrintStatement& statement) override;
+    void visitExpressionStatement(ExpressionStatement& statement) override;
 
     void printResult() const;
 

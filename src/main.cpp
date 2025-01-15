@@ -3,8 +3,9 @@
 #include "CommandLineArgs/CommandLineProcessor.h"
 #include "Evaluator/Evaluator.h"
 #include "Parser/Parser.h"
-#include "Parser/PrintExpressionVisitor.h"
 #include "Scanner/Scanner.h"
+#include "Statement/PrintStatementVisitor.h"
+#include "Statement/Statement.h"
 
 int main(int argc, char* argv[])
 {
@@ -22,6 +23,7 @@ int main(int argc, char* argv[])
     const std::string command  = cmdProcessor.getCommand();
     const std::string argument = cmdProcessor.getArgument();
 
+    // Step 1: Tokenize the input
     Scanner scanner(argument);
     scanner.process();
 
@@ -31,27 +33,35 @@ int main(int argc, char* argv[])
         return scanner.getRetVal();
     }
 
+    // Step 2: Parse the tokens into statements
     Parser parser(scanner.getTokens());
+    auto   statements = parser.parse();
 
-    auto expression = parser.parse();
-    if (!expression)
+    if (statements.empty())
     {
         std::cerr << "Parsing failed due to errors." << std::endl;
         return 65;
     }
 
+    // Step 3: Handle commands
     if (command == "parse")
     {
-        PrintExpressionVisitor printer;
-        expression->accept(printer);
+        // Print each parsed statement
+        for (const auto& statement : statements)
+        {
+            PrintStatementVisitor printer;
+            statement->accept(printer);
+        }
         return 0;
     }
 
-    if (command == "evaluate")
+    if (command == "evaluate" || command == "run")
     {
         Evaluator evaluator;
-        expression->accept(evaluator);
-        evaluator.printResult();
+        for (const auto& statement : statements)
+        {
+            statement->accept(evaluator);  // Evaluate each statement
+        }
     }
 
     return 0;

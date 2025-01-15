@@ -4,31 +4,28 @@
 #include <memory>
 
 #include "../Expression/Expression.h"
+#include "../Statement/Statement.h"
+
+void Evaluator::visitPrintStatement(PrintStatement& statement)
+{
+    statement.getExpression().accept(*this);
+    result->print();
+    std::cout << std::endl;
+}
 
 // Visit a literal expression
 void Evaluator::visitLiteral(const Literal& literal)
 {
-    const std::string& value       = literal.getValue();
-    const auto         literalType = literal.getType();
-    switch (literalType)
+    const std::string& value = literal.getValue();
+    switch (literal.getType())
     {
         case LiteralType::Boolean:
             result = std::make_unique<Result<bool>>(value == "true" ? true : false);
             break;
-
         case LiteralType::String:
             result = std::make_unique<Result<std::string>>(value);
             break;
-
         case LiteralType::Number:
-            result = std::make_unique<Result<double>>(std::stod(value));
-            break;
-
-        case LiteralType::Nil:
-            result = std::make_unique<Result<std::nullptr_t>>();
-            break;
-
-        default:
             try
             {
                 double number = std::stod(value);  // Convert string to double
@@ -40,7 +37,17 @@ void Evaluator::visitLiteral(const Literal& literal)
                 result = std::make_unique<Result<std::nullptr_t>>();  // Use NilResult for errors
             }
             break;
+        case LiteralType::Nil:
+            result = std::make_unique<Result<std::nullptr_t>>();
+            break;
     }
+}
+// Visit an expression statement
+void Evaluator::visitExpressionStatement(ExpressionStatement& statement)
+{
+    statement.getExpression().accept(*this);
+    result->print();
+    std::cout << std::endl;
 }
 
 void Evaluator::handleBangOperator()
@@ -49,16 +56,24 @@ void Evaluator::handleBangOperator()
     if (boolResult)
     {
         result = std::make_unique<Result<bool>>(!boolResult->getValue());
+        return;
     }
-    else if (dynamic_cast<Result<std::nullptr_t>*>(result.get()))
+
+    auto doubleResult = dynamic_cast<Result<double>*>(result.get());
+    if (doubleResult)
+    {
+        result = std::make_unique<Result<bool>>(!doubleResult->getValue());
+        return;
+    }
+
+    if (dynamic_cast<Result<std::nullptr_t>*>(result.get()))
     {
         result = std::make_unique<Result<bool>>(true);
+        return;
     }
-    else
-    {
-        std::cerr << "Error: Operand of '!' must be a boolean or nil" << std::endl;
-        result = std::make_unique<Result<std::nullptr_t>>();
-    }
+
+    std::cerr << "Error: Operand of '!' must be a boolean or nil" << std::endl;
+    std::exit(70);
 }
 
 void Evaluator::handleMinusOperator()
@@ -70,7 +85,7 @@ void Evaluator::handleMinusOperator()
     }
     else
     {
-        std::cerr << "Operand must be a number" << std::endl;
+        std::cerr << "Error: Operand must be a number" << std::endl;
         std::exit(70);
     }
 }
@@ -78,7 +93,7 @@ void Evaluator::handleMinusOperator()
 void Evaluator::visitUnary(const Unary& unary)
 {
     unary.getRight()->accept(*this);  // Evaluate the operand
-    auto op = unary.getOperator();
+    const auto& op = unary.getOperator();
 
     if (op == "!")
     {
@@ -87,6 +102,11 @@ void Evaluator::visitUnary(const Unary& unary)
     else if (op == "-")
     {
         handleMinusOperator();
+    }
+    else
+    {
+        std::cerr << "Error: Unknown unary operator '" << op << "'" << std::endl;
+        std::exit(70);
     }
 }
 
@@ -102,7 +122,6 @@ void Evaluator::handleNumberOperator(const std::unique_ptr<ResultBase>& leftResu
         return;
     }
 
-    // Check for relational operations
     auto relIt = relationalOps.find(op);
     if (relIt != relationalOps.end())
     {
@@ -115,11 +134,12 @@ void Evaluator::handleNumberOperator(const std::unique_ptr<ResultBase>& leftResu
     if (eqIt != equalityOps<double>.end())
     {
         handleBinaryOperation<double, bool>(
-            leftResult, rightResult, "Operands must be numbers.", eqIt->second);
+            leftResult, rightResult, "Operands must be numbers", eqIt->second);
         return;
     }
 
-    return;
+    std::cerr << "Error: Unsupported operator '" << op << "' for numbers" << std::endl;
+    std::exit(70);
 }
 
 void Evaluator::handleStringOperator(const std::unique_ptr<ResultBase>& leftResult,
@@ -130,35 +150,33 @@ void Evaluator::handleStringOperator(const std::unique_ptr<ResultBase>& leftResu
     if (eqIt != equalityOps<std::string>.end())
     {
         handleBinaryOperation<std::string, bool>(
-            leftResult, rightResult, "Operands must be Strings", eqIt->second);
+            leftResult, rightResult, "Operands must be strings", eqIt->second);
         return;
     }
+
     if (op == "+")
     {
         handleBinaryOperation<std::string>(
             leftResult,
             rightResult,
             "Operands must be strings",
-            [](const std::string& left, const std::string& right) { return left + right; });
+            [](const std::string& lhs, const std::string& rhs) { return lhs + rhs; });
         return;
     }
-    std::cerr << "Incompatible types for '" << op << "'" << std::endl;
+
+    std::cerr << "Error: Unsupported operator '" << op << "' for strings" << std::endl;
     std::exit(70);
 }
 
 void Evaluator::handleIncompatibleTypes(const std::string& op)
 {
-    if (op == "==")
+    if (op == "==" || op == "!=")
     {
-        result = std::make_unique<Result<bool>>(false);
+        result = std::make_unique<Result<bool>>(op == "!=");
         return;
     }
-    else if (op == "!=")
-    {
-        result = std::make_unique<Result<bool>>(true);
-        return;
-    }
-    std::cerr << "Incompatible types for '" << op << "'" << std::endl;
+
+    std::cerr << "Error: Incompatible types for operator '" << op << "'" << std::endl;
     std::exit(70);
 }
 
@@ -170,8 +188,9 @@ void Evaluator::visitBinary(const Binary& binary)
     binary.getRight()->accept(*this);      // Evaluate the right operand
     auto rightResult = std::move(result);  // Store the result of the right operand
 
-    auto op = binary.getOperator();
+    const auto& op = binary.getOperator();
 
+    // Handle number operators
     if (dynamic_cast<Result<double>*>(leftResult.get()) &&
         dynamic_cast<Result<double>*>(rightResult.get()))
     {
@@ -187,6 +206,7 @@ void Evaluator::visitBinary(const Binary& binary)
         return;
     }
 
+    // Handle incompatible types
     handleIncompatibleTypes(op);
 }
 

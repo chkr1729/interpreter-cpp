@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "../Evaluator/Result.h"
+#include "../Result/Result.h"
 
 class Environment
 {
@@ -18,10 +18,12 @@ class Environment
     std::shared_ptr<ResultBase> get(const std::string& name) const
     {
         auto it = variables.find(name);
-        if (it != variables.end()) return it->second;
-
+        if (it != variables.end())
+        {
+            return it->second;
+        }
         std::cerr << "Error: Undefined variable '" << name << "'." << std::endl;
-        return nullptr;
+        std::exit(70);
     }
 
    private:

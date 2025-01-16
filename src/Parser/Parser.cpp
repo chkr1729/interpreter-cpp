@@ -25,7 +25,7 @@ std::unique_ptr<Statement> Parser::parseStatement()
 {
     if (match({"var"}))  // Check if it's a variable declaration
     {
-        return parseVariableDeclaration();
+        return parseVariableStatement();
     }
     if (match({"print"}))  // Handle print statements
     {
@@ -64,7 +64,7 @@ std::unique_ptr<ExpressionStatement> Parser::parseExpressionStatement()
     return std::make_unique<ExpressionStatement>(std::move(expression), false);
 }
 
-std::unique_ptr<VariableStatement> Parser::parseVariableDeclaration()
+std::unique_ptr<VariableStatement> Parser::parseVariableStatement()
 {
     Token var = advance();
 

@@ -31,7 +31,7 @@ class Parser
     std::unique_ptr<Statement>           parseStatement();
     std::unique_ptr<PrintStatement>      parsePrintStatement();
     std::unique_ptr<ExpressionStatement> parseExpressionStatement();
-    std::unique_ptr<VariableStatement>   parseVariableDeclaration();
+    std::unique_ptr<VariableStatement>   parseVariableStatement();
 
     // Recursive descent parsing methods for expressions
     std::unique_ptr<Expression> parseExpression();

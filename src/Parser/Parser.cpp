@@ -31,6 +31,10 @@ std::unique_ptr<Statement> Parser::parseStatement()
     {
         return parsePrintStatement();
     }
+    if (match({"{"}))
+    {
+        return parseBlockStatement();
+    }
     return parseExpressionStatement();  // Default case: expression statement
 }
 
@@ -88,6 +92,25 @@ std::unique_ptr<VariableStatement> Parser::parseVariableStatement()
     }
 
     return std::make_unique<VariableStatement>(name, std::move(initializer));
+}
+
+std::unique_ptr<BlockStatement> Parser::parseBlockStatement()
+{
+    std::vector<std::unique_ptr<Statement>> statements;
+
+    while (!check("}") && !isAtEnd())  // Read statements until '}' or EOF
+    {
+        statements.push_back(parseStatement());
+    }
+
+    if (!match({"}"}))
+    {
+        std::cerr << "[line " << peek().getLineNumber() << "] Error: Expect '}' to close block."
+                  << std::endl;
+        std::exit(65);
+    }
+
+    return std::make_unique<BlockStatement>(std::move(statements));
 }
 
 // Parse an expression (handles equality operators)

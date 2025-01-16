@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <vector>
 
 #include "../Expression/Expression.h"
 #include "StatementVisitor.h"
@@ -64,4 +65,20 @@ class VariableStatement : public Statement
    private:
     std::string                 name;
     std::unique_ptr<Expression> initializer;
+};
+
+class BlockStatement : public Statement
+{
+   public:
+    explicit BlockStatement(std::vector<std::unique_ptr<Statement>> statements)
+        : statements(std::move(statements))
+    {
+    }
+
+    void accept(StatementVisitor& visitor) override { visitor.visitBlockStatement(*this); }
+
+    const std::vector<std::unique_ptr<Statement>>& getStatements() const { return statements; }
+
+   private:
+    std::vector<std::unique_ptr<Statement>> statements;
 };

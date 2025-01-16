@@ -30,6 +30,14 @@ void Evaluator::visitVariableStatement(VariableStatement& statement)
     environment.define(statement.getName(), std::move(value));
 }
 
+void Evaluator::visitBlockStatement(BlockStatement& statement)
+{
+    for (const auto& statement : statement.getStatements())
+    {
+        statement->accept(*this);
+    }
+}
+
 void Evaluator::visitVariableExpression(const Variable& expression)
 {
     std::shared_ptr<ResultBase> value = environment.get(expression.getName());

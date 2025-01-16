@@ -34,6 +34,11 @@ void Printer::visitVariableStatement(VariableStatement& statement)
     }
 }
 
+void Printer::visitBlockStatement(BlockStatement& statement)
+{
+    std::cout << std::endl;
+}
+
 // Visit a literal expression
 void Printer::visitLiteral(const Literal& expr)
 {

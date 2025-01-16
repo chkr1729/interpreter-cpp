@@ -1,10 +1,10 @@
 #pragma once
 
 // Forward Declarations
-
 class PrintStatement;
 class ExpressionStatement;
 class VariableStatement;
+class BlockStatement;
 
 class StatementVisitor
 {
@@ -15,4 +15,5 @@ class StatementVisitor
     virtual void visitPrintStatement(PrintStatement& statement)           = 0;
     virtual void visitExpressionStatement(ExpressionStatement& statement) = 0;
     virtual void visitVariableStatement(VariableStatement& statement)     = 0;
+    virtual void visitBlockStatement(BlockStatement& statement)           = 0;
 };

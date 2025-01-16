@@ -31,6 +31,7 @@ class Parser
     std::unique_ptr<Statement>           parseStatement();
     std::unique_ptr<PrintStatement>      parsePrintStatement();
     std::unique_ptr<ExpressionStatement> parseExpressionStatement();
+    std::unique_ptr<VariableStatement>   parseVariableDeclaration();
 
     // Recursive descent parsing methods for expressions
     std::unique_ptr<Expression> parseExpression();
@@ -40,10 +41,7 @@ class Parser
     std::unique_ptr<Expression> parseUnary();
     std::unique_ptr<Expression> parsePrimary();
     std::unique_ptr<Grouping>   parseGrouping();
-    std::unique_ptr<Literal>    parseNumberLiteral();
-    std::unique_ptr<Literal>    parseStringLiteral(bool error);
-    std::unique_ptr<Literal>    parseBooleanLiteral();
-    std::unique_ptr<Literal>    parseNilLiteral();
+    std::unique_ptr<Literal>    parseLiteral();
 
     // Helper function for parsing binary expressions
     std::unique_ptr<Expression> parseBinary(std::function<std::unique_ptr<Expression>()> subParser,

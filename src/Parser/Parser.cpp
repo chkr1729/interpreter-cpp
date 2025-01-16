@@ -23,11 +23,15 @@ std::vector<std::unique_ptr<Statement>> Parser::parse()
 // Parse a statement
 std::unique_ptr<Statement> Parser::parseStatement()
 {
-    if (match({"print"}))
+    if (match({"var"}))  // Check if it's a variable declaration
+    {
+        return parseVariableDeclaration();
+    }
+    if (match({"print"}))  // Handle print statements
     {
         return parsePrintStatement();
     }
-    return parseExpressionStatement();
+    return parseExpressionStatement();  // Default case: expression statement
 }
 
 // Parse a print statement
@@ -45,6 +49,10 @@ std::unique_ptr<PrintStatement> Parser::parsePrintStatement()
 std::unique_ptr<ExpressionStatement> Parser::parseExpressionStatement()
 {
     auto expression = parseExpression();
+    if (!expression)
+    {
+        return nullptr;
+    }
     if (isAtEnd())
     {
         return std::make_unique<ExpressionStatement>(std::move(expression), true);
@@ -54,6 +62,32 @@ std::unique_ptr<ExpressionStatement> Parser::parseExpressionStatement()
         std::cerr << "Error: Missing ';' after expression statement." << std::endl;
     }
     return std::make_unique<ExpressionStatement>(std::move(expression), false);
+}
+
+std::unique_ptr<VariableStatement> Parser::parseVariableDeclaration()
+{
+    Token var = advance();
+
+    if (var.getType() != TokenType::Identifier)
+    {
+        std::cerr << "Error: Expected variable name after 'var'." << std::endl;
+        return nullptr;
+    }
+
+    std::string name = var.getLexeme();
+
+    std::unique_ptr<Expression> initializer = nullptr;
+    if (match({"="}))
+    {
+        initializer = parseExpression();
+    }
+
+    if (!match({";"}))
+    {
+        std::cerr << "Error: Missing ';' after variable declaration." << std::endl;
+    }
+
+    return std::make_unique<VariableStatement>(name, std::move(initializer));
 }
 
 // Parse an expression (handles equality operators)
@@ -105,41 +139,46 @@ std::unique_ptr<Grouping> Parser::parseGrouping()
     return std::make_unique<Grouping>(std::move(expression));
 }
 
-std::unique_ptr<Literal> Parser::parseNumberLiteral()
+std::unique_ptr<Literal> Parser::parseLiteral()
 {
-    Token numberToken = advance();  // Consume the number token
-    return std::make_unique<Literal>(numberToken.getLiteral(), LiteralType::Number);
-}
+    Token literalToken = advance();
 
-std::unique_ptr<Literal> Parser::parseStringLiteral(bool error)
-{
-    if (error)
+    auto literalLexeme = literalToken.getLexeme();
+    auto literalValue  = literalToken.getLiteral();
+    auto tokenType     = literalToken.getType();
+
+    std::unique_ptr<Literal> literalExp;
+    switch (tokenType)
     {
-        std::cerr << "Unterminated string literal" << std::endl;
-        retVal = 65;
+        case TokenType::NumberLiteral:
+            literalExp = std::make_unique<Literal>(literalValue, LiteralType::Number);
+            break;
+        case TokenType::BooleanLiteral:
+            literalExp = std::make_unique<Literal>(literalLexeme, LiteralType::Boolean);
+            break;
+        case TokenType::NilLiteral:
+            literalExp = std::make_unique<Literal>(literalLexeme, LiteralType::Nil);
+            break;
+        case TokenType::StringLiteral:
+            if (literalToken.hasError())
+            {
+                std::cerr << "Unterminated string literal" << std::endl;
+                retVal = 65;
+            }
+            literalExp = std::make_unique<Literal>(literalValue, LiteralType::String);
+            break;
+        default:
+            std::cerr << literalLexeme << " is not a Literal Token." << std::endl;
+            literalExp = nullptr;
+            break;
     }
-
-    Token stringToken = advance();  // Consume the string token
-    return std::make_unique<Literal>(stringToken.getLiteral(), LiteralType::String);
-}
-
-std::unique_ptr<Literal> Parser::parseBooleanLiteral()
-{
-    Token booleanToken = advance();  // Consume the literal token
-    return std::make_unique<Literal>(booleanToken.getLexeme(), LiteralType::Boolean);
-}
-
-std::unique_ptr<Literal> Parser::parseNilLiteral()
-{
-    Token nilToken = advance();  // Consume the literal token
-    return std::make_unique<Literal>(nilToken.getLexeme(), LiteralType::Nil);
+    return literalExp;
 }
 
 // Parse a primary expression (numbers, grouped expressions, and unary operators)
 std::unique_ptr<Expression> Parser::parsePrimary()
 {
-    Token token     = peek();
-    auto  tokenType = token.getType();
+    Token token = peek();
 
     // Handle grouped expressions
     if (match({"("}))
@@ -147,25 +186,15 @@ std::unique_ptr<Expression> Parser::parsePrimary()
         return parseGrouping();
     }
 
-    // Handle literals
-    if (tokenType == TokenType::NumberLiteral)
+    if (token.getCategory() == TokenCategory::Literal)
     {
-        return parseNumberLiteral();
+        return parseLiteral();
     }
 
-    if (tokenType == TokenType::StringLiteral)
+    if (token.getType() == TokenType::Identifier)
     {
-        return parseStringLiteral(token.hasError());
-    }
-
-    if (token.getType() == TokenType::BooleanLiteral)
-    {
-        return parseBooleanLiteral();
-    }
-
-    if (token.getType() == TokenType::NilLiteral)
-    {
-        return parseNilLiteral();
+        advance();
+        return std::make_unique<Variable>(token.getLexeme());
     }
 
     std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;

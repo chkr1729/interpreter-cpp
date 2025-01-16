@@ -14,7 +14,6 @@ class Statement
     virtual void accept(StatementVisitor& visitor) = 0;
 };
 
-// Expression statement class
 class ExpressionStatement : public Statement
 {
    public:
@@ -33,7 +32,6 @@ class ExpressionStatement : public Statement
     bool                        print;
 };
 
-// Print statement class
 class PrintStatement : public Statement
 {
    public:
@@ -48,4 +46,22 @@ class PrintStatement : public Statement
 
    private:
     std::unique_ptr<Expression> expression;
+};
+
+class VariableStatement : public Statement
+{
+   public:
+    VariableStatement(const std::string& name, std::unique_ptr<Expression> initializer)
+        : name(name), initializer(std::move(initializer))
+    {
+    }
+
+    void accept(StatementVisitor& visitor) override { visitor.visitVariableStatement(*this); }
+
+    const std::string& getName() const { return name; }
+    const Expression*  getInitializer() const { return initializer.get(); }
+
+   private:
+    std::string                 name;
+    std::unique_ptr<Expression> initializer;
 };

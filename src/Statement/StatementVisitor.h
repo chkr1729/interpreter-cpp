@@ -4,6 +4,7 @@
 
 class PrintStatement;
 class ExpressionStatement;
+class VariableStatement;
 
 class StatementVisitor
 {
@@ -13,4 +14,5 @@ class StatementVisitor
     // Visit methods for different kinds of statements
     virtual void visitPrintStatement(PrintStatement& statement)           = 0;
     virtual void visitExpressionStatement(ExpressionStatement& statement) = 0;
+    virtual void visitVariableStatement(VariableStatement& statement)     = 0;
 };

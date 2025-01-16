@@ -16,6 +16,33 @@ void Evaluator::visitPrintStatement(PrintStatement& statement)
     }
 }
 
+void Evaluator::visitVariableStatement(VariableStatement& statement)
+{
+    std::shared_ptr<ResultBase> value = nullptr;
+
+    auto initializer = statement.getInitializer();
+    if (initializer)
+    {
+        initializer->accept(*this);
+        value = result;
+    }
+
+    environment.define(statement.getName(), std::move(value));
+}
+
+void Evaluator::visitVariableExpression(const Variable& expression)
+{
+    std::shared_ptr<ResultBase> value = environment.get(expression.getName());
+    if (value)
+    {
+        result = value;
+    }
+    else
+    {
+        result = std::make_shared<Result<std::nullptr_t>>();
+    }
+}
+
 // Visit a literal expression
 void Evaluator::visitLiteral(const Literal& literal)
 {
@@ -119,8 +146,8 @@ void Evaluator::visitUnary(const Unary& unary)
     }
 }
 
-void Evaluator::handleNumberOperator(const std::unique_ptr<ResultBase>& leftResult,
-                                     const std::unique_ptr<ResultBase>& rightResult,
+void Evaluator::handleNumberOperator(const std::shared_ptr<ResultBase>& leftResult,
+                                     const std::shared_ptr<ResultBase>& rightResult,
                                      const std::string&                 op)
 {
     auto it = arithmeticOps.find(op);
@@ -151,8 +178,8 @@ void Evaluator::handleNumberOperator(const std::unique_ptr<ResultBase>& leftResu
     std::exit(70);
 }
 
-void Evaluator::handleStringOperator(const std::unique_ptr<ResultBase>& leftResult,
-                                     const std::unique_ptr<ResultBase>& rightResult,
+void Evaluator::handleStringOperator(const std::shared_ptr<ResultBase>& leftResult,
+                                     const std::shared_ptr<ResultBase>& rightResult,
                                      const std::string&                 op)
 {
     auto eqIt = equalityOps<std::string>.find(op);
@@ -177,8 +204,8 @@ void Evaluator::handleStringOperator(const std::unique_ptr<ResultBase>& leftResu
     std::exit(70);
 }
 
-void Evaluator::handleBoolOperator(const std::unique_ptr<ResultBase>& leftResult,
-                                   const std::unique_ptr<ResultBase>& rightResult,
+void Evaluator::handleBoolOperator(const std::shared_ptr<ResultBase>& leftResult,
+                                   const std::shared_ptr<ResultBase>& rightResult,
                                    const std::string&                 op)
 {
     auto eqIt = equalityOps<bool>.find(op);
@@ -256,5 +283,5 @@ void Evaluator::printResult() const
         return;
     }
 
-    result->print();  // Call the appropriate print() method based on the specific Result type
+    result->print();
 }

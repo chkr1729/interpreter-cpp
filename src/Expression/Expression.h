@@ -95,3 +95,19 @@ class Binary : public Expression
     std::string                 op;
     std::unique_ptr<Expression> right;
 };
+
+class Variable : public Expression
+{
+   public:
+    explicit Variable(const std::string& name) : name(name) {}
+
+    void accept(ExpressionVisitor& visitor) const override
+    {
+        visitor.visitVariableExpression(*this);
+    }
+
+    const std::string& getName() const { return name; }
+
+   private:
+    std::string name;
+};

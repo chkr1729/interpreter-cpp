@@ -121,18 +121,17 @@ std::string Scanner::extractWordToken() const
 Token Scanner::getIdentifierAndReservedWordToken() const
 {
     std::string word = extractWordToken();
+    if (booleanLiterals.find(word) != booleanLiterals.end())
+    {
+        return Token(
+            TokenCategory::Literal, TokenType::BooleanLiteral, word, "null", lineNum, false);
+    }
+    if (word == "nil")
+    {
+        return Token(TokenCategory::Literal, TokenType::NilLiteral, word, "null", lineNum, false);
+    }
     if (reservedWords.find(word) != reservedWords.end())
     {
-        if (booleanLiterals.find(word) != booleanLiterals.end())
-        {
-            return Token(
-                TokenCategory::Literal, TokenType::BooleanLiteral, word, "null", lineNum, false);
-        }
-        else if (word == "nil")
-        {
-            return Token(
-                TokenCategory::Literal, TokenType::NilLiteral, word, "null", lineNum, false);
-        }
         return Token(TokenCategory::Word, TokenType::ReservedWord, word, "null", lineNum, false);
     }
     return Token(TokenCategory::Word, TokenType::Identifier, word, "null", lineNum, false);

@@ -24,6 +24,16 @@ void Printer::visitExpressionStatement(ExpressionStatement& statement)
     }
 }
 
+void Printer::visitVariableStatement(VariableStatement& statement)
+{
+    auto expr = statement.getInitializer();
+    if (expr)
+    {
+        expr->accept(*this);
+        std::cout << std::endl;
+    }
+}
+
 // Visit a literal expression
 void Printer::visitLiteral(const Literal& expr)
 {
@@ -54,4 +64,9 @@ void Printer::visitBinary(const Binary& expr)
     std::cout << " ";
     expr.getRight()->accept(*this);
     std::cout << ")";
+}
+
+void Printer::visitVariableExpression(const Variable& expr)
+{
+    std::cout << expr.getName();
 }

@@ -5,29 +5,33 @@
 #include <unordered_map>
 #include <variant>
 
+#include "../Environment/Environment.h"
 #include "../Expression/ExpressionVisitor.h"
-#include "../Statement/StatementVisitor.h"  // Include StatementVisitor
-#include "Result.h"
+#include "../Statement/StatementVisitor.h"
 
 class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit both visitors
 {
    public:
-    const std::unique_ptr<ResultBase>& getResult() const { return result; }
+    const std::shared_ptr<ResultBase>& getResult() const { return result; }
 
     // Expression visitor methods
     void visitLiteral(const Literal& literal) override;
     void visitUnary(const Unary& unary) override;
     void visitBinary(const Binary& binary) override;
     void visitGrouping(const Grouping& grp) override;
+    void visitVariableExpression(const Variable& expression) override;
 
     // Statement visitor methods
     void visitPrintStatement(PrintStatement& statement) override;
     void visitExpressionStatement(ExpressionStatement& statement) override;
+    void visitVariableStatement(VariableStatement& statement) override;
 
     void printResult() const;
 
    private:
-    std::unique_ptr<ResultBase> result;
+    std::shared_ptr<ResultBase> result;
+
+    Environment environment;
 
     // Handle arithmetic operators
     inline static const std::unordered_map<std::string, std::function<double(double, double)>>
@@ -58,23 +62,23 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
     void handleBangOperator();
     void handleMinusOperator();
 
-    void handleNumberOperator(const std::unique_ptr<ResultBase>& leftResult,
-                              const std::unique_ptr<ResultBase>& rightResult,
+    void handleNumberOperator(const std::shared_ptr<ResultBase>& leftResult,
+                              const std::shared_ptr<ResultBase>& rightResult,
                               const std::string&                 op);
 
-    void handleStringOperator(const std::unique_ptr<ResultBase>& leftResult,
-                              const std::unique_ptr<ResultBase>& rightResult,
+    void handleStringOperator(const std::shared_ptr<ResultBase>& leftResult,
+                              const std::shared_ptr<ResultBase>& rightResult,
                               const std::string&                 op);
 
-    void handleBoolOperator(const std::unique_ptr<ResultBase>& leftResult,
-                            const std::unique_ptr<ResultBase>& rightResult,
+    void handleBoolOperator(const std::shared_ptr<ResultBase>& leftResult,
+                            const std::shared_ptr<ResultBase>& rightResult,
                             const std::string&                 op);
 
     void handleIncompatibleTypes(const std::string& op);
 
     template <typename OperandT, typename ReturnT = OperandT, typename Op>
-    void handleBinaryOperation(const std::unique_ptr<ResultBase>& leftResult,
-                               const std::unique_ptr<ResultBase>& rightResult,
+    void handleBinaryOperation(const std::shared_ptr<ResultBase>& leftResult,
+                               const std::shared_ptr<ResultBase>& rightResult,
                                const std::string&                 errorMsg,
                                Op                                 operation)
     {

@@ -93,6 +93,31 @@ std::unique_ptr<VariableStatement> Parser::parseVariableDeclaration()
 // Parse an expression (handles equality operators)
 std::unique_ptr<Expression> Parser::parseExpression()
 {
+    return parseAssignment();
+}
+
+std::unique_ptr<Expression> Parser::parseAssignment()
+{
+    auto left = parseEquality();
+    if (match({"="}))
+    {
+        Token equals = tokens[current - 1];
+        auto  right  = parseAssignment();
+
+        // Ensure that left is a valid variable (identifier)
+        if (auto variable = dynamic_cast<Variable*>(left.get()))
+        {
+            return std::make_unique<AssignmentExpression>(variable->getName(), std::move(right));
+        }
+
+        std::cerr << "Error: Invalid assignment target." << std::endl;
+    }
+
+    return left;
+}
+
+std::unique_ptr<Expression> Parser::parseEquality()
+{
     return parseBinary([this]() { return parseComparison(); }, {"==", "!="});
 }
 

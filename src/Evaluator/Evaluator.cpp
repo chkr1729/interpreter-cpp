@@ -43,6 +43,13 @@ void Evaluator::visitVariableExpression(const Variable& expression)
     }
 }
 
+void Evaluator::visitAssignmentExpression(const AssignmentExpression& expr)
+{
+    expr.getValue().accept(*this);
+
+    environment.assign(expr.getName(), result);
+}
+
 // Visit a literal expression
 void Evaluator::visitLiteral(const Literal& literal)
 {

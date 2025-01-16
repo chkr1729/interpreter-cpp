@@ -1,1 +1,3 @@
-74 * 68 / 97
+var bar;
+bar = 2;
+print bar;

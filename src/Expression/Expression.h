@@ -111,3 +111,24 @@ class Variable : public Expression
    private:
     std::string name;
 };
+
+class AssignmentExpression : public Expression
+{
+   public:
+    AssignmentExpression(std::string name, std::unique_ptr<Expression> value)
+        : name(std::move(name)), value(std::move(value))
+    {
+    }
+
+    void accept(ExpressionVisitor& visitor) const override
+    {
+        visitor.visitAssignmentExpression(*this);
+    }
+
+    const std::string& getName() const { return name; }
+    const Expression&  getValue() const { return *value; }
+
+   private:
+    std::string                 name;
+    std::unique_ptr<Expression> value;
+};

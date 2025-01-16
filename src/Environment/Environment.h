@@ -10,21 +10,10 @@
 class Environment
 {
    public:
-    void define(const std::string& name, std::shared_ptr<ResultBase> value)
-    {
-        variables[name] = std::move(value);
-    }
+    void define(const std::string& name, std::shared_ptr<ResultBase> value);
+    void assign(const std::string& name, std::shared_ptr<ResultBase> value);
 
-    std::shared_ptr<ResultBase> get(const std::string& name) const
-    {
-        auto it = variables.find(name);
-        if (it != variables.end())
-        {
-            return it->second;
-        }
-        std::cerr << "Error: Undefined variable '" << name << "'." << std::endl;
-        std::exit(70);
-    }
+    std::shared_ptr<ResultBase> get(const std::string& name) const;
 
    private:
     std::unordered_map<std::string, std::shared_ptr<ResultBase>> variables;

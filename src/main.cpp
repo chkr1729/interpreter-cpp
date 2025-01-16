@@ -48,10 +48,9 @@ int main(int argc, char* argv[])
     // Step 3: Handle commands
     if (command == "parse")
     {
-        // Print each parsed statement
+        Printer printer;
         for (const auto& statement : statements)
         {
-            Printer printer;
             statement->accept(printer);
         }
         return 0;
@@ -62,7 +61,7 @@ int main(int argc, char* argv[])
         Evaluator evaluator;
         for (const auto& statement : statements)
         {
-            statement->accept(evaluator);  // Evaluate each statement
+            statement->accept(evaluator);
         }
     }
 

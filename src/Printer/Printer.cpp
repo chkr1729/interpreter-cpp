@@ -70,3 +70,8 @@ void Printer::visitVariableExpression(const Variable& expr)
 {
     std::cout << expr.getName();
 }
+
+void Printer::visitAssignmentExpression(const AssignmentExpression& expr)
+{
+    std::cout << expr.getName();
+}

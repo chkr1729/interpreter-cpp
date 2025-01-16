@@ -18,4 +18,5 @@ class Printer : public StatementVisitor, public ExpressionVisitor
     void visitUnary(const Unary& expr) override;
     void visitBinary(const Binary& expr) override;
     void visitVariableExpression(const Variable& expr) override;
+    void visitAssignmentExpression(const AssignmentExpression& expr) override;
 };

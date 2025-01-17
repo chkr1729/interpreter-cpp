@@ -31,6 +31,7 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
     void visitVariableStatement(VariableStatement& statement) override;
     void visitBlockStatement(BlockStatement& statement) override;
     void visitIfStatement(IfStatement& statement) override;
+    void visitWhileStatement(WhileStatement& statement) override;
 
     void printResult() const;
 
@@ -64,6 +65,9 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
             {">=", [](double lhs, double rhs) { return lhs >= rhs; }},
             {"<=", [](double lhs, double rhs) { return lhs <= rhs; }},
         };
+
+    void handleLogicalOr(const LogicalExpression& expr);
+    void handleLogicalAnd(const LogicalExpression& expr);
 
     void handleBangOperator();
     void handleMinusOperator();

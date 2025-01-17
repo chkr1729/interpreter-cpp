@@ -55,6 +55,21 @@ void Evaluator::visitIfStatement(IfStatement& statement)
     }
 }
 
+void Evaluator::visitWhileStatement(WhileStatement& statement)
+{
+    while (true)
+    {
+        statement.getCondition().accept(*this);
+
+        if (!result->isTruthy())
+        {
+            break;
+        }
+
+        statement.getBody()->accept(*this);
+    }
+}
+
 void Evaluator::visitVariableExpression(const Variable& expression)
 {
     std::shared_ptr<ResultBase> value = environment->get(expression.getName());
@@ -75,34 +90,44 @@ void Evaluator::visitAssignmentExpression(const AssignmentExpression& expr)
     environment->assign(expr.getName(), result);
 }
 
-void Evaluator::visitLogicalExpression(const LogicalExpression& expr)
+void Evaluator::handleLogicalOr(const LogicalExpression& expr)
+{
+    expr.getLeft().accept(*this);
+    auto leftResult = std::move(result);
+    if (leftResult->isTruthy())
+    {
+        result = std::move(leftResult);
+        return;
+    }
+    expr.getRight().accept(*this);
+    return;
+}
+
+void Evaluator::handleLogicalAnd(const LogicalExpression& expr)
 {
     expr.getLeft().accept(*this);
     auto leftResult = std::move(result);
 
-    const auto op = expr.getOperator();
+    if (leftResult->isTruthy())
+    {
+        expr.getRight().accept(*this);
+        return;
+    }
+    result = std::move(leftResult);
+    return;
+}
+
+void Evaluator::visitLogicalExpression(const LogicalExpression& expr)
+{
+    const auto op = expr.getOperator();  // Assuming this returns std::string
 
     if (op == "or")
     {
-        if (leftResult->isTruthy())  // Short-circuit if the left is truthy
-        {
-            result = std::move(leftResult);
-            return;
-        }
-
-        expr.getRight().accept(*this);  // Evaluate right side only if left is false
-        return;
+        handleLogicalOr(expr);
     }
-
-    if (op == "and")
+    else if (op == "and")
     {
-        if (leftResult->isTruthy())
-        {
-            expr.getRight().accept(*this);  // Evaluate right side only if left is false
-            return;
-        }
-        result = std::move(leftResult);
-        return;
+        handleLogicalAnd(expr);
     }
 }
 

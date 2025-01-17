@@ -39,6 +39,10 @@ std::unique_ptr<Statement> Parser::parseStatement()
     {
         return parseIfStatement();
     }
+    else if (match({"while"}))
+    {
+        return parseWhileStatement();
+    }
     return parseExpressionStatement();  // Default case: expression statement
 }
 
@@ -143,6 +147,27 @@ std::unique_ptr<IfStatement> Parser::parseIfStatement()
 
     return std::make_unique<IfStatement>(
         std::move(condition), std::move(thenBranch), std::move(elseBranch));
+}
+
+std::unique_ptr<WhileStatement> Parser::parseWhileStatement()
+{
+    if (!match({"("}))
+    {
+        std::cerr << "Error: Expected '(' after 'while'." << std::endl;
+        return nullptr;
+    }
+
+    auto condition = parseExpression();
+
+    if (!match({")"}))
+    {
+        std::cerr << "Error: Expected ')' after while condition." << std::endl;
+        return nullptr;
+    }
+
+    auto body = parseStatement();
+
+    return std::make_unique<WhileStatement>(std::move(condition), std::move(body));
 }
 
 std::unique_ptr<Expression> Parser::parseExpression()

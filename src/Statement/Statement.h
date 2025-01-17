@@ -106,3 +106,21 @@ class IfStatement : public Statement
     std::unique_ptr<Statement>  thenBranch;
     std::unique_ptr<Statement>  elseBranch;
 };
+
+class WhileStatement : public Statement
+{
+   public:
+    WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body)
+        : condition(std::move(condition)), body(std::move(body))
+    {
+    }
+
+    void accept(StatementVisitor& visitor) override { visitor.visitWhileStatement(*this); }
+
+    const Expression& getCondition() const { return *condition; }
+    Statement*        getBody() const { return body.get(); }
+
+   private:
+    std::unique_ptr<Expression> condition;
+    std::unique_ptr<Statement>  body;
+};

@@ -44,6 +44,11 @@ void Printer::visitIfStatement(IfStatement& statement)
     std::cout << std::endl;
 }
 
+void Printer::visitWhileStatement(WhileStatement& statement)
+{
+    std::cout << std::endl;
+}
+
 // Visit a literal expression
 void Printer::visitLiteral(const Literal& expr)
 {

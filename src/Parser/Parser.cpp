@@ -147,7 +147,37 @@ std::unique_ptr<IfStatement> Parser::parseIfStatement()
 
 std::unique_ptr<Expression> Parser::parseExpression()
 {
-    return parseAssignment();
+    return parseOr();
+}
+
+std::unique_ptr<Expression> Parser::parseOr()
+{
+    auto left = parseAnd();  // OR has lower precedence than AND
+
+    while (match({"or"}))
+    {
+        Token operatorToken = tokens[current - 1];  // The matched 'or' operator
+        auto  right         = parseAnd();
+        left                = std::make_unique<LogicalExpression>(
+            std::move(left), operatorToken.getLexeme(), std::move(right));
+    }
+
+    return left;
+}
+
+std::unique_ptr<Expression> Parser::parseAnd()
+{
+    auto left = parseAssignment();
+
+    while (match({"and"}))
+    {
+        Token operatorToken = tokens[current - 1];
+        auto  right         = parseComparison();
+        left                = std::make_unique<LogicalExpression>(
+            std::move(left), operatorToken.getLexeme(), std::move(right));
+    }
+
+    return left;
 }
 
 std::unique_ptr<Expression> Parser::parseAssignment()

@@ -132,3 +132,28 @@ class AssignmentExpression : public Expression
     std::string                 name;
     std::unique_ptr<Expression> value;
 };
+
+class LogicalExpression : public Expression
+{
+   public:
+    LogicalExpression(std::unique_ptr<Expression> left,
+                      const std::string&          operatorLexeme,
+                      std::unique_ptr<Expression> right)
+        : left(std::move(left)), operatorLexeme(operatorLexeme), right(std::move(right))
+    {
+    }
+
+    void accept(ExpressionVisitor& visitor) const override
+    {
+        visitor.visitLogicalExpression(*this);
+    }
+
+    const Expression&  getLeft() const { return *left; }
+    const std::string& getOperator() const { return operatorLexeme; }
+    const Expression&  getRight() const { return *right; }
+
+   private:
+    std::unique_ptr<Expression> left;
+    std::string                 operatorLexeme;
+    std::unique_ptr<Expression> right;
+};

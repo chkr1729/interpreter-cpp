@@ -7,6 +7,7 @@ class Binary;
 class Unary;
 class Variable;
 class AssignmentExpression;
+class LogicalExpression;
 
 class ExpressionVisitor
 {
@@ -17,4 +18,5 @@ class ExpressionVisitor
     virtual void visitUnary(const Unary& expr)                               = 0;
     virtual void visitVariableExpression(const Variable& expr)               = 0;
     virtual void visitAssignmentExpression(const AssignmentExpression& expr) = 0;
+    virtual void visitLogicalExpression(const LogicalExpression& expr)       = 0;
 };

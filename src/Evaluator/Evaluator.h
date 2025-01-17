@@ -23,6 +23,7 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
     void visitGrouping(const Grouping& grp) override;
     void visitVariableExpression(const Variable& expression) override;
     void visitAssignmentExpression(const AssignmentExpression& expr) override;
+    void visitLogicalExpression(const LogicalExpression& expr) override;
 
     // Statement visitor methods
     void visitPrintStatement(PrintStatement& statement) override;

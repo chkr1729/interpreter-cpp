@@ -75,13 +75,3 @@ void Printer::visitBinary(const Binary& expr)
     expr.getRight()->accept(*this);
     std::cout << ")";
 }
-
-void Printer::visitVariableExpression(const Variable& expr)
-{
-    std::cout << expr.getName();
-}
-
-void Printer::visitAssignmentExpression(const AssignmentExpression& expr)
-{
-    std::cout << expr.getName();
-}

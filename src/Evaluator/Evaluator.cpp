@@ -45,9 +45,7 @@ void Evaluator::visitIfStatement(IfStatement& statement)
 {
     statement.getCondition().accept(*this);
 
-    auto boolResult = dynamic_cast<Result<bool>*>(result.get());
-
-    if (boolResult && boolResult->getValue())
+    if (result->isTruthy())
     {
         statement.getThenBranch()->accept(*this);
     }
@@ -75,6 +73,20 @@ void Evaluator::visitAssignmentExpression(const AssignmentExpression& expr)
     expr.getValue().accept(*this);
 
     environment->assign(expr.getName(), result);
+}
+
+void Evaluator::visitLogicalExpression(const LogicalExpression& expr)
+{
+    expr.getLeft().accept(*this);
+    auto leftResult = std::move(result);
+
+    if (leftResult->isTruthy())  // Short-circuit if the left is truthy
+    {
+        result = std::move(leftResult);
+        return;
+    }
+
+    expr.getRight().accept(*this);  // Evaluate right side only if left is false
 }
 
 // Visit a literal expression

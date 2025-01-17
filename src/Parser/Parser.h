@@ -37,6 +37,8 @@ class Parser
 
     // Recursive descent parsing methods for expressions
     std::unique_ptr<Expression> parseExpression();
+    std::unique_ptr<Expression> parseOr();
+    std::unique_ptr<Expression> parseAnd();
     std::unique_ptr<Expression> parseAssignment();
     std::unique_ptr<Expression> parseEquality();
     std::unique_ptr<Expression> parseComparison();

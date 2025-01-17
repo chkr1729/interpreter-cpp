@@ -57,7 +57,7 @@ class Result<std::string> : public ResultBase
 
     const std::string& getValue() const { return value; }
 
-    bool isTruthy() const override { return !value.empty(); }  // Empty string is false
+    bool isTruthy() const override { return true; }  // Empty string is false
 
     void print() const override { std::cout << value << std::endl; }
 

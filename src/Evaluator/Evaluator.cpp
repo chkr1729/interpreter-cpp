@@ -80,13 +80,30 @@ void Evaluator::visitLogicalExpression(const LogicalExpression& expr)
     expr.getLeft().accept(*this);
     auto leftResult = std::move(result);
 
-    if (leftResult->isTruthy())  // Short-circuit if the left is truthy
+    const auto op = expr.getOperator();
+
+    if (op == "or")
     {
-        result = std::move(leftResult);
+        if (leftResult->isTruthy())  // Short-circuit if the left is truthy
+        {
+            result = std::move(leftResult);
+            return;
+        }
+
+        expr.getRight().accept(*this);  // Evaluate right side only if left is false
         return;
     }
 
-    expr.getRight().accept(*this);  // Evaluate right side only if left is false
+    if (op == "and")
+    {
+        if (leftResult->isTruthy())
+        {
+            expr.getRight().accept(*this);  // Evaluate right side only if left is false
+            return;
+        }
+        result = std::move(leftResult);
+        return;
+    }
 }
 
 // Visit a literal expression

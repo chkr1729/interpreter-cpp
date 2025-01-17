@@ -35,6 +35,10 @@ std::unique_ptr<Statement> Parser::parseStatement()
     {
         return parseBlockStatement();
     }
+    if (match({"if"}))
+    {
+        return parseIfStatement();
+    }
     return parseExpressionStatement();  // Default case: expression statement
 }
 
@@ -113,7 +117,34 @@ std::unique_ptr<BlockStatement> Parser::parseBlockStatement()
     return std::make_unique<BlockStatement>(std::move(statements));
 }
 
-// Parse an expression (handles equality operators)
+std::unique_ptr<IfStatement> Parser::parseIfStatement()
+{
+    if (!match({"("}))
+    {
+        std::cerr << "Error: Expected '(' after 'if'." << std::endl;
+        return nullptr;
+    }
+
+    auto condition = parseExpression();
+
+    if (!match({")"}))
+    {
+        std::cerr << "Error: Expected ')' after if condition." << std::endl;
+        return nullptr;
+    }
+
+    auto thenBranch = parseStatement();
+
+    std::unique_ptr<Statement> elseBranch = nullptr;
+    if (match({"else"}))
+    {
+        elseBranch = parseStatement();
+    }
+
+    return std::make_unique<IfStatement>(
+        std::move(condition), std::move(thenBranch), std::move(elseBranch));
+}
+
 std::unique_ptr<Expression> Parser::parseExpression()
 {
     return parseAssignment();

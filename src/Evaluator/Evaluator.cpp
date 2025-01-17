@@ -34,11 +34,27 @@ void Evaluator::visitBlockStatement(BlockStatement& statement)
 {
     auto previous = environment;
     environment   = std::make_shared<Environment>(previous);
-    for (const auto& statement : statement.getStatements())
+    for (const auto& stmnt : statement.getStatements())
     {
-        statement->accept(*this);
+        stmnt->accept(*this);
     }
     environment = previous;
+}
+
+void Evaluator::visitIfStatement(IfStatement& statement)
+{
+    statement.getCondition().accept(*this);
+
+    auto boolResult = dynamic_cast<Result<bool>*>(result.get());
+
+    if (boolResult && boolResult->getValue())
+    {
+        statement.getThenBranch()->accept(*this);
+    }
+    else if (statement.getElseBranch())
+    {
+        statement.getElseBranch()->accept(*this);
+    }
 }
 
 void Evaluator::visitVariableExpression(const Variable& expression)

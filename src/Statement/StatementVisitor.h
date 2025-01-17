@@ -5,6 +5,7 @@ class PrintStatement;
 class ExpressionStatement;
 class VariableStatement;
 class BlockStatement;
+class IfStatement;
 
 class StatementVisitor
 {
@@ -16,4 +17,5 @@ class StatementVisitor
     virtual void visitExpressionStatement(ExpressionStatement& statement) = 0;
     virtual void visitVariableStatement(VariableStatement& statement)     = 0;
     virtual void visitBlockStatement(BlockStatement& statement)           = 0;
+    virtual void visitIfStatement(IfStatement& statement)                 = 0;
 };

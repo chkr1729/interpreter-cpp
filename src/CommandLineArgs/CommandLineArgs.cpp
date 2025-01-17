@@ -1,16 +1,13 @@
-#include "CommandLineProcessor.h"
+#include "CommandLineArgs.h"
 
 #include <iostream>
 #include <unordered_set>
 
-// Allowed commands
 const std::unordered_set<std::string> validCommands = {"tokenize", "parse", "evaluate", "run"};
 
-// Constructor
-CommandLineProcessor::CommandLineProcessor(int argc, char* argv[]) : argc(argc), argv(argv) {}
+CommandLineArgs::CommandLineArgs(int argc, char* argv[]) : argc(argc), argv(argv) {}
 
-// Validate the command-line arguments
-bool CommandLineProcessor::validateArgs() const
+bool CommandLineArgs::validateArgs() const
 {
     if (argc != 3)
     {
@@ -28,14 +25,12 @@ bool CommandLineProcessor::validateArgs() const
     return true;
 }
 
-// Get the command
-std::string CommandLineProcessor::getCommand() const
+std::string CommandLineArgs::getCommand() const
 {
     return argv[1];
 }
 
-// Get the argument
-std::string CommandLineProcessor::getArgument() const
+std::string CommandLineArgs::getArgument() const
 {
     return argv[2];
 }

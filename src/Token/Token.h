@@ -3,8 +3,6 @@
 #include <string>
 #include <unordered_set>
 
-// #TODO: Add TokenGroup for better grouping like Literal, Operator, Whitespaces etc.
-
 enum class TokenCategory
 {
     Space,
@@ -64,7 +62,6 @@ class Token
     int                getLineNumber() const { return lineNumber; }
     bool               hasError() const { return error; }
 
-    // Count the number of newline characters in the token's lexeme
     int countNewLines() const { return std::count(lexeme.begin(), lexeme.end(), '\n'); }
 
     size_t size() const { return lexeme.size(); }

@@ -12,6 +12,7 @@ class Printer : public StatementVisitor, public ExpressionVisitor
     void visitExpressionStatement(ExpressionStatement& statement) override;
     void visitVariableStatement(VariableStatement& statement) override;
     void visitBlockStatement(BlockStatement& statement) override;
+    void visitIfStatement(IfStatement& statement) override;
 
     // Expression visitor methods
     void visitLiteral(const Literal& expr) override;

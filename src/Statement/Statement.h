@@ -82,3 +82,27 @@ class BlockStatement : public Statement
    private:
     std::vector<std::unique_ptr<Statement>> statements;
 };
+
+class IfStatement : public Statement
+{
+   public:
+    IfStatement(std::unique_ptr<Expression> condition,
+                std::unique_ptr<Statement>  thenBranch,
+                std::unique_ptr<Statement>  elseBranch)
+        : condition(std::move(condition)),
+          thenBranch(std::move(thenBranch)),
+          elseBranch(std::move(elseBranch))
+    {
+    }
+
+    void accept(StatementVisitor& visitor) override { visitor.visitIfStatement(*this); }
+
+    const Expression& getCondition() const { return *condition; }
+    Statement*        getThenBranch() const { return thenBranch.get(); }
+    Statement*        getElseBranch() const { return elseBranch.get(); }
+
+   private:
+    std::unique_ptr<Expression> condition;
+    std::unique_ptr<Statement>  thenBranch;
+    std::unique_ptr<Statement>  elseBranch;
+};

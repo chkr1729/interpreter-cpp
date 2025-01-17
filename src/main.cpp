@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "CommandLineArgs/CommandLineProcessor.h"
+#include "CommandLineArgs/CommandLineArgs.h"
 #include "Evaluator/Evaluator.h"
 #include "Parser/Parser.h"
 #include "Printer/Printer.h"
@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
 
-    CommandLineProcessor cmdProcessor(argc, argv);
+    CommandLineArgs cmdProcessor(argc, argv);
 
     if (!cmdProcessor.validateArgs())
     {

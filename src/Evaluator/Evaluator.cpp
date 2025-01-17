@@ -70,6 +70,37 @@ void Evaluator::visitWhileStatement(WhileStatement& statement)
     }
 }
 
+void Evaluator::visitForStatement(ForStatement& statement)
+{
+    // Execute initializer if present
+    if (statement.getInitializer())
+    {
+        statement.getInitializer()->accept(*this);
+    }
+
+    while (true)
+    {
+        bool conditionTruthy = true;
+        if (statement.getCondition())
+        {
+            statement.getCondition()->accept(*this);
+            conditionTruthy = result->isTruthy();
+        }
+
+        if (!conditionTruthy)
+        {
+            break;
+        }
+
+        statement.getBody()->accept(*this);
+
+        if (statement.getIncrement())
+        {
+            statement.getIncrement()->accept(*this);
+        }
+    }
+}
+
 void Evaluator::visitVariableExpression(const Variable& expression)
 {
     std::shared_ptr<ResultBase> value = environment->get(expression.getName());

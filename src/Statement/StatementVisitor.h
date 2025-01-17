@@ -7,6 +7,7 @@ class VariableStatement;
 class BlockStatement;
 class IfStatement;
 class WhileStatement;
+class ForStatement;
 
 class StatementVisitor
 {
@@ -20,4 +21,5 @@ class StatementVisitor
     virtual void visitBlockStatement(BlockStatement& statement)           = 0;
     virtual void visitIfStatement(IfStatement& statement)                 = 0;
     virtual void visitWhileStatement(WhileStatement& statement)           = 0;
+    virtual void visitForStatement(ForStatement& statement)               = 0;
 };

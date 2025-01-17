@@ -43,6 +43,10 @@ std::unique_ptr<Statement> Parser::parseStatement()
     {
         return parseWhileStatement();
     }
+    else if (match({"for"}))
+    {
+        return parseForStatement();
+    }
     return parseExpressionStatement();  // Default case: expression statement
 }
 
@@ -168,6 +172,52 @@ std::unique_ptr<WhileStatement> Parser::parseWhileStatement()
     auto body = parseStatement();
 
     return std::make_unique<WhileStatement>(std::move(condition), std::move(body));
+}
+
+std::unique_ptr<ForStatement> Parser::parseForStatement()
+{
+    if (!match({"("}))
+    {
+        std::cerr << "Error: Expected '(' after 'for'." << std::endl;
+        return nullptr;
+    }
+
+    // Parse initializer
+    std::unique_ptr<Statement> initializer;
+    if (!match({";"}))
+    {
+        initializer = parseStatement();
+    }
+
+    // Parse condition
+    std::unique_ptr<Expression> condition;
+    if (!match({";"}))
+    {
+        condition = parseExpression();
+        if (!match({";"}))
+        {
+            std::cerr << "Error: Expected ';' after loop condition." << std::endl;
+            return nullptr;
+        }
+    }
+
+    // Parse increment
+    std::unique_ptr<Expression> increment;
+    if (!match({")"}))
+    {
+        increment = parseExpression();
+        if (!match({")"}))
+        {
+            std::cerr << "Error: Expected ')' after loop increment." << std::endl;
+            return nullptr;
+        }
+    }
+
+    // Parse body
+    auto body = parseStatement();
+
+    return std::make_unique<ForStatement>(
+        std::move(initializer), std::move(condition), std::move(increment), std::move(body));
 }
 
 std::unique_ptr<Expression> Parser::parseExpression()

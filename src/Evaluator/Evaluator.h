@@ -32,6 +32,7 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
     void visitBlockStatement(BlockStatement& statement) override;
     void visitIfStatement(IfStatement& statement) override;
     void visitWhileStatement(WhileStatement& statement) override;
+    void visitForStatement(ForStatement& statement) override;
 
     void printResult() const;
 

@@ -124,3 +124,31 @@ class WhileStatement : public Statement
     std::unique_ptr<Expression> condition;
     std::unique_ptr<Statement>  body;
 };
+
+class ForStatement : public Statement
+{
+   public:
+    ForStatement(std::unique_ptr<Statement>  initializer,
+                 std::unique_ptr<Expression> condition,
+                 std::unique_ptr<Expression> increment,
+                 std::unique_ptr<Statement>  body)
+        : initializer(std::move(initializer)),
+          condition(std::move(condition)),
+          increment(std::move(increment)),
+          body(std::move(body))
+    {
+    }
+
+    void accept(StatementVisitor& visitor) override { visitor.visitForStatement(*this); }
+
+    Statement*        getInitializer() const { return initializer.get(); }
+    const Expression* getCondition() const { return condition.get(); }
+    const Expression* getIncrement() const { return increment.get(); }
+    Statement*        getBody() const { return body.get(); }
+
+   private:
+    std::unique_ptr<Statement>  initializer;
+    std::unique_ptr<Expression> condition;
+    std::unique_ptr<Expression> increment;
+    std::unique_ptr<Statement>  body;
+};

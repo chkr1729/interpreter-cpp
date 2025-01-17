@@ -27,20 +27,23 @@ void Evaluator::visitVariableStatement(VariableStatement& statement)
         value = result;
     }
 
-    environment.define(statement.getName(), std::move(value));
+    environment->define(statement.getName(), value);
 }
 
 void Evaluator::visitBlockStatement(BlockStatement& statement)
 {
+    auto previous = environment;
+    environment   = std::make_shared<Environment>(previous);
     for (const auto& statement : statement.getStatements())
     {
         statement->accept(*this);
     }
+    environment = previous;
 }
 
 void Evaluator::visitVariableExpression(const Variable& expression)
 {
-    std::shared_ptr<ResultBase> value = environment.get(expression.getName());
+    std::shared_ptr<ResultBase> value = environment->get(expression.getName());
     if (value)
     {
         result = value;
@@ -55,7 +58,7 @@ void Evaluator::visitAssignmentExpression(const AssignmentExpression& expr)
 {
     expr.getValue().accept(*this);
 
-    environment.assign(expr.getName(), result);
+    environment->assign(expr.getName(), result);
 }
 
 // Visit a literal expression

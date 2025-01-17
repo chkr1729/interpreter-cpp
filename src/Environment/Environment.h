@@ -10,6 +10,11 @@
 class Environment
 {
    public:
+    explicit Environment(std::shared_ptr<Environment> enclosing = nullptr)
+        : enclosing(std::move(enclosing))
+    {
+    }
+
     void define(const std::string& name, std::shared_ptr<ResultBase> value);
     void assign(const std::string& name, std::shared_ptr<ResultBase> value);
 
@@ -17,4 +22,6 @@ class Environment
 
    private:
     std::unordered_map<std::string, std::shared_ptr<ResultBase>> variables;
+
+    std::shared_ptr<Environment> enclosing;
 };

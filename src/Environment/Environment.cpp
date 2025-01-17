@@ -7,13 +7,21 @@ void Environment::define(const std::string& name, std::shared_ptr<ResultBase> va
 
 void Environment::assign(const std::string& name, std::shared_ptr<ResultBase> value)
 {
-    if (variables.find(name) == variables.end())
+    if (variables.find(name) != variables.end())
     {
-        std::cerr << "Error: Undefined variable '" << name << "'." << std::endl;
+        variables[name] = std::move(value);
         return;
     }
 
-    variables[name] = std::move(value);
+    // If not found in the current scope, check the enclosing scope
+    if (enclosing)
+    {
+        enclosing->assign(name, std::move(value));
+        return;
+    }
+
+    std::cerr << "Undefined variable '" + name + "'." << std::endl;
+    std::exit(70);
 }
 
 std::shared_ptr<ResultBase> Environment::get(const std::string& name) const
@@ -23,6 +31,12 @@ std::shared_ptr<ResultBase> Environment::get(const std::string& name) const
     {
         return it->second;
     }
-    std::cerr << "Error: Undefined variable '" << name << "'." << std::endl;
+
+    if (enclosing)
+    {
+        return enclosing->get(name);
+    }
+
+    std::cerr << "Undefined variable '" + name + "'." << std::endl;
     std::exit(70);
 }

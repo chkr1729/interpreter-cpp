@@ -12,6 +12,8 @@
 class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit both visitors
 {
    public:
+    Evaluator() : environment(std::make_shared<Environment>()) {}
+
     const std::shared_ptr<ResultBase>& getResult() const { return result; }
 
     // Expression visitor methods
@@ -33,7 +35,7 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
    private:
     std::shared_ptr<ResultBase> result;
 
-    Environment environment;
+    std::shared_ptr<Environment> environment;
 
     // Handle arithmetic operators
     inline static const std::unordered_map<std::string, std::function<double(double, double)>>

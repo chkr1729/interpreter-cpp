@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "ParserError.h"
+
 // Constructor: Move tokens into the parser
 Parser::Parser(std::vector<Token>&& tokens) : tokens(std::move(tokens)) {}
 
@@ -23,34 +25,42 @@ std::vector<std::unique_ptr<Statement>> Parser::parse()
 // Parse a statement
 std::unique_ptr<Statement> Parser::parseStatement()
 {
-    if (match({"var"}))  // Check if it's a variable declaration
+    try
     {
-        return parseVariableStatement();
+        if (match({"var"}))
+        {
+            return parseVariableStatement();
+        }
+        if (match({"print"}))
+        {
+            return parsePrintStatement();
+        }
+        if (match({"{"}))
+        {
+            return parseBlockStatement();
+        }
+        if (match({"if"}))
+        {
+            return parseIfStatement();
+        }
+        else if (match({"while"}))
+        {
+            return parseWhileStatement();
+        }
+        else if (match({"for"}))
+        {
+            return parseForStatement();
+        }
+        return parseExpressionStatement();
     }
-    if (match({"print"}))  // Handle print statements
+    catch (const ParserError& e)
     {
-        return parsePrintStatement();
+        std::cerr << "[line " << peek().getLineNumber() << "] Syntax Error: " << e.what()
+                  << std::endl;
+        std::exit(65);
     }
-    if (match({"{"}))
-    {
-        return parseBlockStatement();
-    }
-    if (match({"if"}))
-    {
-        return parseIfStatement();
-    }
-    else if (match({"while"}))
-    {
-        return parseWhileStatement();
-    }
-    else if (match({"for"}))
-    {
-        return parseForStatement();
-    }
-    return parseExpressionStatement();  // Default case: expression statement
 }
 
-// Parse a print statement
 std::unique_ptr<PrintStatement> Parser::parsePrintStatement()
 {
     auto expression = parseExpression();
@@ -61,7 +71,6 @@ std::unique_ptr<PrintStatement> Parser::parsePrintStatement()
     return std::make_unique<PrintStatement>(std::move(expression));
 }
 
-// Parse an expression statement
 std::unique_ptr<ExpressionStatement> Parser::parseExpressionStatement()
 {
     auto expression = parseExpression();
@@ -110,7 +119,7 @@ std::unique_ptr<BlockStatement> Parser::parseBlockStatement()
 {
     std::vector<std::unique_ptr<Statement>> statements;
 
-    while (!check("}") && !isAtEnd())  // Read statements until '}' or EOF
+    while (!check("}") && !isAtEnd())
     {
         statements.push_back(parseStatement());
     }
@@ -178,8 +187,7 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
 {
     if (!match({"("}))
     {
-        std::cerr << "Error: Expected '(' after 'for'." << std::endl;
-        return nullptr;
+        throw ParserError("Expected '(' after 'for'.");
     }
 
     // Parse initializer
@@ -187,6 +195,10 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
     if (!match({";"}))
     {
         initializer = parseStatement();
+        if (!initializer)
+        {
+            throw ParserError("Expected expression in 'for' initializer.");
+        }
     }
 
     // Parse condition
@@ -194,10 +206,13 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
     if (!match({";"}))
     {
         condition = parseExpression();
+        if (!condition)
+        {
+            throw ParserError("Expected condition in 'for' loop.");
+        }
         if (!match({";"}))
         {
-            std::cerr << "Error: Expected ';' after loop condition." << std::endl;
-            return nullptr;
+            throw ParserError("Expected ';' after condition.");
         }
     }
 
@@ -206,15 +221,27 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
     if (!match({")"}))
     {
         increment = parseExpression();
+        if (!increment)
+        {
+            throw ParserError("Expected expression in 'for' increment.");
+        }
         if (!match({")"}))
         {
-            std::cerr << "Error: Expected ')' after loop increment." << std::endl;
-            return nullptr;
+            throw ParserError("Expected ')' after 'for' increment.");
         }
     }
 
     // Parse body
     auto body = parseStatement();
+    if (!body)
+    {
+        throw ParserError("Expected statement after 'for' loop.");
+    }
+
+    if (dynamic_cast<VariableStatement*>(body.get()))
+    {
+        throw ParserError("Variable declaration not allowed inside 'for' loop.");
+    }
 
     return std::make_unique<ForStatement>(
         std::move(initializer), std::move(condition), std::move(increment), std::move(body));
@@ -415,7 +442,7 @@ Token Parser::advance()
 // Helper method: Returns the current token without advancing
 Token Parser::peek() const
 {
-    return tokens[current];
+    return isAtEnd() ? tokens[tokens.size() - 1] : tokens[current];
 }
 
 // Helper method: Checks if we've reached the end of the tokens

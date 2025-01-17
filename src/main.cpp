@@ -3,6 +3,7 @@
 #include "CommandLineArgs/CommandLineArgs.h"
 #include "Evaluator/Evaluator.h"
 #include "Parser/Parser.h"
+#include "Parser/ParserError.h"
 #include "Printer/Printer.h"
 #include "Scanner/Scanner.h"
 #include "Statement/Statement.h"
@@ -56,13 +57,18 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    if (command == "evaluate" || command == "run")
+    try
     {
         Evaluator evaluator;
         for (const auto& statement : statements)
         {
             statement->accept(evaluator);
         }
+    }
+    catch (const ParserError& e)
+    {
+        std::cerr << "Syntax Error: " << e.what() << std::endl;
+        std::exit(65);  // Exit with error code 65 for syntax errors
     }
 
     return 0;

@@ -1,9 +1,3 @@
-// The logical OR operator should return the first value that is truthy
-if (false or "ok") print "baz";
-if (nil or "ok") print "baz";
-
-if (false or false) print "foo";
-if (true or "foo") print "foo";
-
-if (65 or "bar") print "bar";
-if ("bar" or "bar") print "bar";
+// This program would give a compile error
+// because the variable declaration is not inside a block
+for (;;) var foo;

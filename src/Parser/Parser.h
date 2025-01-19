@@ -22,8 +22,9 @@ class Parser
     int getRetVal() const { return retVal; }
 
    private:
-    std::vector<Token> tokens;  // The list of tokens to parse
-    size_t             current = 0;
+    std::vector<Token> tokens;
+
+    size_t current = 0;
 
     int retVal = 0;
 
@@ -48,18 +49,20 @@ class Parser
     std::unique_ptr<Expression> parseFactor();
     std::unique_ptr<Expression> parseUnary();
     std::unique_ptr<Expression> parsePrimary();
+    std::unique_ptr<Expression> parseCall(std::unique_ptr<Expression> callee);
 
-    std::unique_ptr<Grouping> parseGrouping();
-    std::unique_ptr<Literal>  parseLiteral();
+    std::unique_ptr<GroupingExpression> parseGrouping();
+    std::unique_ptr<LiteralExpression>  parseLiteral();
 
     // Helper function for parsing binary expressions
     std::unique_ptr<Expression> parseBinary(std::function<std::unique_ptr<Expression>()> subParser,
                                             const std::vector<std::string>&              operators);
 
     // Helper methods
-    Token advance();        // Advances and returns the current token
-    Token peek() const;     // Returns the current token without advancing
-    bool  isAtEnd() const;  // Checks if we've reached the end of the tokens
-    bool  match(const std::vector<std::string>& lexemes);  // Checks and advances if a token matches
-    bool  check(const std::string& lexeme) const;  // Checks if the current token matches a lexeme
+    Token advance();
+    Token peek() const;
+
+    bool isAtEnd() const;
+    bool match(const std::vector<std::string>& lexemes);
+    bool check(const std::string& lexeme) const;
 };

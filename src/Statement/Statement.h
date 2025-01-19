@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 
+#include "../Environment/Environment.h"
 #include "../Expression/Expression.h"
 #include "StatementVisitor.h"
 
@@ -12,7 +13,7 @@ class Statement
     virtual ~Statement() = default;
 
     // Accept method for visitor pattern
-    virtual void accept(StatementVisitor& visitor) = 0;
+    virtual void accept(StatementVisitor& visitor, Environment* env = nullptr) const = 0;
 };
 
 class ExpressionStatement : public Statement
@@ -23,14 +24,19 @@ class ExpressionStatement : public Statement
     {
     }
 
-    void accept(StatementVisitor& visitor) override { visitor.visitExpressionStatement(*this); }
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        return visitor.visitExpressionStatement(*this, env);
+    }
 
-    const Expression* getExpression() { return expression.get(); }
-    bool              toPrint() const { return print; }
+    const Expression* getExpression() const { return expression.get(); }
+
+    bool toPrint() const { return print; }
 
    private:
-    std::unique_ptr<Expression> expression;
-    bool                        print;
+    const std::unique_ptr<Expression> expression;
+
+    bool print;
 };
 
 class PrintStatement : public Statement
@@ -41,12 +47,15 @@ class PrintStatement : public Statement
     {
     }
 
-    void accept(StatementVisitor& visitor) override { visitor.visitPrintStatement(*this); }
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        visitor.visitPrintStatement(*this, env);
+    }
 
-    const Expression* getExpression() { return expression.get(); }
+    const Expression* getExpression() const { return expression.get(); }
 
    private:
-    std::unique_ptr<Expression> expression;
+    const std::unique_ptr<Expression> expression;
 };
 
 class VariableStatement : public Statement
@@ -57,14 +66,18 @@ class VariableStatement : public Statement
     {
     }
 
-    void accept(StatementVisitor& visitor) override { visitor.visitVariableStatement(*this); }
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        visitor.visitVariableStatement(*this, env);
+    }
 
     const std::string& getName() const { return name; }
     const Expression*  getInitializer() const { return initializer.get(); }
 
    private:
-    std::string                 name;
-    std::unique_ptr<Expression> initializer;
+    const std::string name;
+
+    const std::unique_ptr<Expression> initializer;
 };
 
 class BlockStatement : public Statement
@@ -75,12 +88,15 @@ class BlockStatement : public Statement
     {
     }
 
-    void accept(StatementVisitor& visitor) override { visitor.visitBlockStatement(*this); }
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        visitor.visitBlockStatement(*this, env);
+    }
 
     const std::vector<std::unique_ptr<Statement>>& getStatements() const { return statements; }
 
    private:
-    std::vector<std::unique_ptr<Statement>> statements;
+    const std::vector<std::unique_ptr<Statement>> statements;
 };
 
 class IfStatement : public Statement
@@ -95,16 +111,19 @@ class IfStatement : public Statement
     {
     }
 
-    void accept(StatementVisitor& visitor) override { visitor.visitIfStatement(*this); }
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        visitor.visitIfStatement(*this, env);
+    }
 
-    const Expression& getCondition() const { return *condition; }
-    Statement*        getThenBranch() const { return thenBranch.get(); }
-    Statement*        getElseBranch() const { return elseBranch.get(); }
+    const Expression* getCondition() const { return condition.get(); }
+    const Statement*  getThenBranch() const { return thenBranch.get(); }
+    const Statement*  getElseBranch() const { return elseBranch.get(); }
 
    private:
-    std::unique_ptr<Expression> condition;
-    std::unique_ptr<Statement>  thenBranch;
-    std::unique_ptr<Statement>  elseBranch;
+    const std::unique_ptr<Expression> condition;
+    const std::unique_ptr<Statement>  thenBranch;
+    const std::unique_ptr<Statement>  elseBranch;
 };
 
 class WhileStatement : public Statement
@@ -115,14 +134,17 @@ class WhileStatement : public Statement
     {
     }
 
-    void accept(StatementVisitor& visitor) override { visitor.visitWhileStatement(*this); }
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        visitor.visitWhileStatement(*this, env);
+    }
 
-    const Expression& getCondition() const { return *condition; }
-    Statement*        getBody() const { return body.get(); }
+    const Expression* getCondition() const { return condition.get(); }
+    const Statement*  getBody() const { return body.get(); }
 
    private:
-    std::unique_ptr<Expression> condition;
-    std::unique_ptr<Statement>  body;
+    const std::unique_ptr<Expression> condition;
+    const std::unique_ptr<Statement>  body;
 };
 
 class ForStatement : public Statement
@@ -139,16 +161,19 @@ class ForStatement : public Statement
     {
     }
 
-    void accept(StatementVisitor& visitor) override { visitor.visitForStatement(*this); }
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        visitor.visitForStatement(*this, env);
+    }
 
-    Statement*        getInitializer() const { return initializer.get(); }
+    const Statement*  getInitializer() const { return initializer.get(); }
     const Expression* getCondition() const { return condition.get(); }
     const Expression* getIncrement() const { return increment.get(); }
-    Statement*        getBody() const { return body.get(); }
+    const Statement*  getBody() const { return body.get(); }
 
    private:
-    std::unique_ptr<Statement>  initializer;
-    std::unique_ptr<Expression> condition;
-    std::unique_ptr<Expression> increment;
-    std::unique_ptr<Statement>  body;
+    const std::unique_ptr<Statement>  initializer;
+    const std::unique_ptr<Expression> condition;
+    const std::unique_ptr<Expression> increment;
+    const std::unique_ptr<Statement>  body;
 };

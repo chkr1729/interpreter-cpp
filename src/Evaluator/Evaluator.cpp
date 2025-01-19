@@ -4,78 +4,87 @@
 #include <memory>
 
 #include "../Expression/Expression.h"
+#include "../Function/Callable.h"
+#include "../Operators/Operators.h"
 #include "../Statement/Statement.h"
 
-void Evaluator::visitPrintStatement(PrintStatement& statement)
+void Evaluator::visitPrintStatement(const PrintStatement& statement, Environment* env)
 {
     auto expr = statement.getExpression();
     if (expr)
     {
-        expr->accept(*this);
+        expr->accept(*this, env);
         result->print();
     }
 }
 
-void Evaluator::visitVariableStatement(VariableStatement& statement)
+void Evaluator::visitExpressionStatement(const ExpressionStatement& statement, Environment* env)
 {
-    std::shared_ptr<ResultBase> value = nullptr;
+    auto expr = statement.getExpression();
+    if (expr)
+    {
+        expr->accept(*this, env);
+    }
+    if (statement.toPrint())
+    {
+        result->print();
+    }
+}
 
+void Evaluator::visitVariableStatement(const VariableStatement& statement, Environment* env)
+{
+    result.reset();
     auto initializer = statement.getInitializer();
     if (initializer)
     {
-        initializer->accept(*this);
-        value = result;
+        initializer->accept(*this, env);
     }
-
-    environment->define(statement.getName(), value);
+    if (env)
+    {
+        env->define(statement.getName(), result);
+    }
 }
 
-void Evaluator::visitBlockStatement(BlockStatement& statement)
+void Evaluator::visitBlockStatement(const BlockStatement& statement, Environment* env)
 {
-    auto previous = environment;
-    environment   = std::make_shared<Environment>(previous);
+    auto blockEnv = std::make_shared<Environment>(env->getSharedPtr());
     for (const auto& stmnt : statement.getStatements())
     {
-        stmnt->accept(*this);
+        stmnt->accept(*this, blockEnv.get());
     }
-    environment = previous;
 }
 
-void Evaluator::visitIfStatement(IfStatement& statement)
+void Evaluator::visitIfStatement(const IfStatement& statement, Environment* env)
 {
-    statement.getCondition().accept(*this);
-
+    statement.getCondition()->accept(*this, env);
     if (result->isTruthy())
     {
-        statement.getThenBranch()->accept(*this);
+        statement.getThenBranch()->accept(*this, env);
     }
     else if (statement.getElseBranch())
     {
-        statement.getElseBranch()->accept(*this);
+        statement.getElseBranch()->accept(*this, env);
     }
 }
 
-void Evaluator::visitWhileStatement(WhileStatement& statement)
+void Evaluator::visitWhileStatement(const WhileStatement& statement, Environment* env)
 {
     while (true)
     {
-        statement.getCondition().accept(*this);
-
+        statement.getCondition()->accept(*this, env);
         if (!result->isTruthy())
         {
             break;
         }
-
-        statement.getBody()->accept(*this);
+        statement.getBody()->accept(*this, env);
     }
 }
 
-void Evaluator::visitForStatement(ForStatement& statement)
+void Evaluator::visitForStatement(const ForStatement& statement, Environment* env)
 {
-    // Execute initializer if present
     if (statement.getInitializer())
     {
-        statement.getInitializer()->accept(*this);
+        statement.getInitializer()->accept(*this, env);
     }
 
     while (true)
@@ -83,7 +92,7 @@ void Evaluator::visitForStatement(ForStatement& statement)
         bool conditionTruthy = true;
         if (statement.getCondition())
         {
-            statement.getCondition()->accept(*this);
+            statement.getCondition()->accept(*this, env);
             conditionTruthy = result->isTruthy();
         }
 
@@ -92,116 +101,109 @@ void Evaluator::visitForStatement(ForStatement& statement)
             break;
         }
 
-        statement.getBody()->accept(*this);
+        statement.getBody()->accept(*this, env);
 
         if (statement.getIncrement())
         {
-            statement.getIncrement()->accept(*this);
+            statement.getIncrement()->accept(*this, env);
         }
     }
 }
 
-void Evaluator::visitVariableExpression(const Variable& expression)
+void Evaluator::visitVariableExpression(const VariableExpression& expression, Environment* env)
 {
-    std::shared_ptr<ResultBase> value = environment->get(expression.getName());
+    result.reset();
+    std::shared_ptr<ResultBase> value = env->get(expression.getName());
     if (value)
     {
         result = value;
     }
     else
     {
-        result = std::make_shared<Result<std::nullptr_t>>();
+        result = std::make_unique<Result<std::nullptr_t>>();
     }
 }
 
-void Evaluator::visitAssignmentExpression(const AssignmentExpression& expr)
+void Evaluator::visitAssignmentExpression(const AssignmentExpression& expr, Environment* env)
 {
-    expr.getValue().accept(*this);
-
-    environment->assign(expr.getName(), result);
+    result.reset();
+    expr.getValue()->accept(*this, env);
+    if (env)
+    {
+        env->assign(expr.getName(), result);
+    }
 }
 
-void Evaluator::handleLogicalOr(const LogicalExpression& expr)
+void Evaluator::handleLogicalOr(const LogicalExpression& expr, Environment* env)
 {
-    expr.getLeft().accept(*this);
+    result.reset();
+    expr.getLeft()->accept(*this, env);
     auto leftResult = std::move(result);
     if (leftResult->isTruthy())
     {
         result = std::move(leftResult);
         return;
     }
-    expr.getRight().accept(*this);
+    expr.getRight()->accept(*this, env);
     return;
 }
 
-void Evaluator::handleLogicalAnd(const LogicalExpression& expr)
+void Evaluator::handleLogicalAnd(const LogicalExpression& expr, Environment* env)
 {
-    expr.getLeft().accept(*this);
+    result.reset();
+    expr.getLeft()->accept(*this, env);
     auto leftResult = std::move(result);
-
     if (leftResult->isTruthy())
     {
-        expr.getRight().accept(*this);
+        result.reset();
+        expr.getRight()->accept(*this, env);
         return;
     }
     result = std::move(leftResult);
     return;
 }
 
-void Evaluator::visitLogicalExpression(const LogicalExpression& expr)
+void Evaluator::visitLogicalExpression(const LogicalExpression& expr, Environment* env)
 {
-    const auto op = expr.getOperator();  // Assuming this returns std::string
+    const auto op = expr.getOperator();
 
     if (op == "or")
     {
-        handleLogicalOr(expr);
+        handleLogicalOr(expr, env);
     }
     else if (op == "and")
     {
-        handleLogicalAnd(expr);
+        handleLogicalAnd(expr, env);
     }
 }
 
-// Visit a literal expression
-void Evaluator::visitLiteral(const Literal& literal)
+void Evaluator::visitLiteralExpression(const LiteralExpression& literal, Environment* env)
 {
+    result.reset();
     const std::string& value = literal.getValue();
     switch (literal.getType())
     {
         case LiteralType::Boolean:
-            result = std::make_unique<Result<bool>>(value == "true" ? true : false);
+            result = std::make_shared<Result<bool>>(value == "true" ? true : false);
             break;
         case LiteralType::String:
-            result = std::make_unique<Result<std::string>>(value);
+            result = std::make_shared<Result<std::string>>(value);
             break;
         case LiteralType::Number:
             try
             {
                 double number = std::stod(value);  // Convert string to double
-                result        = std::make_unique<Result<double>>(number);
+                result        = std::make_shared<Result<double>>(number);
             }
             catch (const std::invalid_argument& e)
             {
                 std::cerr << "Error: Invalid number literal: " << value << std::endl;
-                result = std::make_unique<Result<std::nullptr_t>>();  // Use NilResult for errors
+                result = std::make_shared<Result<std::nullptr_t>>();  // Use NilResult for errors
             }
             break;
         case LiteralType::Nil:
-            result = std::make_unique<Result<std::nullptr_t>>();
+            result = std::make_shared<Result<std::nullptr_t>>();
             break;
-    }
-}
-// Visit an expression statement
-void Evaluator::visitExpressionStatement(ExpressionStatement& statement)
-{
-    auto expr = statement.getExpression();
-    if (expr)
-    {
-        expr->accept(*this);
-    }
-    if (statement.toPrint())
-    {
-        result->print();
     }
 }
 
@@ -210,20 +212,20 @@ void Evaluator::handleBangOperator()
     auto boolResult = dynamic_cast<Result<bool>*>(result.get());
     if (boolResult)
     {
-        result = std::make_unique<Result<bool>>(!boolResult->getValue());
+        result = std::make_shared<Result<bool>>(!boolResult->getValue());
         return;
     }
 
     auto doubleResult = dynamic_cast<Result<double>*>(result.get());
     if (doubleResult)
     {
-        result = std::make_unique<Result<bool>>(!doubleResult->getValue());
+        result = std::make_shared<Result<bool>>(!doubleResult->getValue());
         return;
     }
 
     if (dynamic_cast<Result<std::nullptr_t>*>(result.get()))
     {
-        result = std::make_unique<Result<bool>>(true);
+        result = std::make_shared<Result<bool>>(true);
         return;
     }
 
@@ -236,7 +238,7 @@ void Evaluator::handleMinusOperator()
     auto numberResult = dynamic_cast<Result<double>*>(result.get());
     if (numberResult)
     {
-        result = std::make_unique<Result<double>>(-numberResult->getValue());
+        result = std::make_shared<Result<double>>(-numberResult->getValue());
     }
     else
     {
@@ -245,9 +247,10 @@ void Evaluator::handleMinusOperator()
     }
 }
 
-void Evaluator::visitUnary(const Unary& unary)
+void Evaluator::visitUnaryExpression(const UnaryExpression& unary, Environment* env)
 {
-    unary.getRight()->accept(*this);  // Evaluate the operand
+    result.reset();
+    unary.getRight()->accept(*this, env);
     const auto& op = unary.getOperator();
 
     if (op == "!")
@@ -269,24 +272,24 @@ void Evaluator::handleNumberOperator(const std::shared_ptr<ResultBase>& leftResu
                                      const std::shared_ptr<ResultBase>& rightResult,
                                      const std::string&                 op)
 {
-    auto it = arithmeticOps.find(op);
-    if (it != arithmeticOps.end())
+    auto it = Operators::arithmeticOps.find(op);
+    if (it != Operators::arithmeticOps.end())
     {
         handleBinaryOperation<double>(
             leftResult, rightResult, "Operands must be numbers", it->second);
         return;
     }
 
-    auto relIt = relationalOps.find(op);
-    if (relIt != relationalOps.end())
+    auto relIt = Operators::relationalOps.find(op);
+    if (relIt != Operators::relationalOps.end())
     {
         handleBinaryOperation<double, bool>(
             leftResult, rightResult, "Operands must be numbers", relIt->second);
         return;
     }
 
-    auto eqIt = equalityOps<double>.find(op);
-    if (eqIt != equalityOps<double>.end())
+    auto eqIt = Operators::equalityOps<double>.find(op);
+    if (eqIt != Operators::equalityOps<double>.end())
     {
         handleBinaryOperation<double, bool>(
             leftResult, rightResult, "Operands must be numbers", eqIt->second);
@@ -301,8 +304,8 @@ void Evaluator::handleStringOperator(const std::shared_ptr<ResultBase>& leftResu
                                      const std::shared_ptr<ResultBase>& rightResult,
                                      const std::string&                 op)
 {
-    auto eqIt = equalityOps<std::string>.find(op);
-    if (eqIt != equalityOps<std::string>.end())
+    auto eqIt = Operators::equalityOps<std::string>.find(op);
+    if (eqIt != Operators::equalityOps<std::string>.end())
     {
         handleBinaryOperation<std::string, bool>(
             leftResult, rightResult, "Operands must be strings", eqIt->second);
@@ -327,8 +330,8 @@ void Evaluator::handleBoolOperator(const std::shared_ptr<ResultBase>& leftResult
                                    const std::shared_ptr<ResultBase>& rightResult,
                                    const std::string&                 op)
 {
-    auto eqIt = equalityOps<bool>.find(op);
-    if (eqIt != equalityOps<bool>.end())
+    auto eqIt = Operators::equalityOps<bool>.find(op);
+    if (eqIt != Operators::equalityOps<bool>.end())
     {
         handleBinaryOperation<bool, bool>(
             leftResult, rightResult, "Operands must be booleans", eqIt->second);
@@ -351,13 +354,15 @@ void Evaluator::handleIncompatibleTypes(const std::string& op)
     std::exit(70);
 }
 
-void Evaluator::visitBinary(const Binary& binary)
+void Evaluator::visitBinaryExpression(const BinaryExpression& binary, Environment* env)
 {
-    binary.getLeft()->accept(*this);      // Evaluate the left operand
-    auto leftResult = std::move(result);  // Store the result of the left operand
+    result.reset();
 
-    binary.getRight()->accept(*this);      // Evaluate the right operand
-    auto rightResult = std::move(result);  // Store the result of the right operand
+    binary.getLeft()->accept(*this, env);
+    auto leftResult = std::move(result);
+
+    binary.getRight()->accept(*this, env);
+    auto rightResult = std::move(result);
 
     const auto& op = binary.getOperator();
 
@@ -389,18 +394,35 @@ void Evaluator::visitBinary(const Binary& binary)
     handleIncompatibleTypes(op);
 }
 
-void Evaluator::visitGrouping(const Grouping& grp)
+void Evaluator::visitGroupingExpression(const GroupingExpression& grp, Environment* env)
 {
-    grp.getExpression()->accept(*this);
+    grp.getExpression()->accept(*this, env);
 }
 
-void Evaluator::printResult() const
+void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env)
 {
-    if (!result)
+    expr.getCallee()->accept(*this, env);
+    auto callee = std::dynamic_pointer_cast<Callable>(result);
+
+    if (!callee)
     {
-        std::cout << "nil" << std::endl;
-        return;
+        throw std::runtime_error("Attempt to call a non-function object.");
     }
 
-    result->print();
+    // Evaluate arguments
+    std::vector<std::shared_ptr<ResultBase>> arguments;
+    for (const auto& argument : expr.getArguments())
+    {
+        argument->accept(*this, env);
+        arguments.push_back(result);
+    }
+
+    // Ensure correct number of arguments
+    if (arguments.size() != callee->arity())
+    {
+        throw std::runtime_error("Incorrect number of arguments to function.");
+    }
+
+    // Call the function
+    result = callee->call(arguments);
 }

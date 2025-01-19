@@ -4,10 +4,8 @@
 
 #include "ParserError.h"
 
-// Constructor: Move tokens into the parser
 Parser::Parser(std::vector<Token>&& tokens) : tokens(std::move(tokens)) {}
 
-// Main parse method: returns a list of statements
 std::vector<std::unique_ptr<Statement>> Parser::parse()
 {
     std::vector<std::unique_ptr<Statement>> statements;
@@ -22,7 +20,6 @@ std::vector<std::unique_ptr<Statement>> Parser::parse()
     return statements;
 }
 
-// Parse a statement
 std::unique_ptr<Statement> Parser::parseStatement()
 {
     try
@@ -291,7 +288,7 @@ std::unique_ptr<Expression> Parser::parseAssignment()
         auto  right  = parseAssignment();
 
         // Ensure that left is a valid variable (identifier)
-        if (auto variable = dynamic_cast<Variable*>(left.get()))
+        if (auto variable = dynamic_cast<VariableExpression*>(left.get()))
         {
             return std::make_unique<AssignmentExpression>(variable->getName(), std::move(right));
         }
@@ -332,12 +329,12 @@ std::unique_ptr<Expression> Parser::parseUnary()
     {
         Token operatorToken = tokens[current - 1];  // The matched operator
         auto  right         = parseUnary();         // Recursively parse the operand
-        return std::make_unique<Unary>(operatorToken.getLexeme(), std::move(right));
+        return std::make_unique<UnaryExpression>(operatorToken.getLexeme(), std::move(right));
     }
     return parsePrimary();
 }
 
-std::unique_ptr<Grouping> Parser::parseGrouping()
+std::unique_ptr<GroupingExpression> Parser::parseGrouping()
 {
     auto expression = parseExpression();
     if (!match({")"}))
@@ -347,10 +344,10 @@ std::unique_ptr<Grouping> Parser::parseGrouping()
         advance();
         return nullptr;
     }
-    return std::make_unique<Grouping>(std::move(expression));
+    return std::make_unique<GroupingExpression>(std::move(expression));
 }
 
-std::unique_ptr<Literal> Parser::parseLiteral()
+std::unique_ptr<LiteralExpression> Parser::parseLiteral()
 {
     Token literalToken = advance();
 
@@ -358,17 +355,17 @@ std::unique_ptr<Literal> Parser::parseLiteral()
     auto literalValue  = literalToken.getLiteral();
     auto tokenType     = literalToken.getType();
 
-    std::unique_ptr<Literal> literalExp;
+    std::unique_ptr<LiteralExpression> literalExp;
     switch (tokenType)
     {
         case TokenType::NumberLiteral:
-            literalExp = std::make_unique<Literal>(literalValue, LiteralType::Number);
+            literalExp = std::make_unique<LiteralExpression>(literalValue, LiteralType::Number);
             break;
         case TokenType::BooleanLiteral:
-            literalExp = std::make_unique<Literal>(literalLexeme, LiteralType::Boolean);
+            literalExp = std::make_unique<LiteralExpression>(literalLexeme, LiteralType::Boolean);
             break;
         case TokenType::NilLiteral:
-            literalExp = std::make_unique<Literal>(literalLexeme, LiteralType::Nil);
+            literalExp = std::make_unique<LiteralExpression>(literalLexeme, LiteralType::Nil);
             break;
         case TokenType::StringLiteral:
             if (literalToken.hasError())
@@ -376,7 +373,7 @@ std::unique_ptr<Literal> Parser::parseLiteral()
                 std::cerr << "Unterminated string literal" << std::endl;
                 retVal = 65;
             }
-            literalExp = std::make_unique<Literal>(literalValue, LiteralType::String);
+            literalExp = std::make_unique<LiteralExpression>(literalValue, LiteralType::String);
             break;
         default:
             std::cerr << literalLexeme << " is not a Literal Token." << std::endl;
@@ -391,7 +388,13 @@ std::unique_ptr<Expression> Parser::parsePrimary()
 {
     Token token = peek();
 
-    // Handle grouped expressions
+    if (match({"clock"}) && match({"("}) && match({")"}))  // Recognizing function names
+    {
+        return std::make_unique<CallExpression>(
+            std::make_unique<VariableExpression>(token.getLexeme()),
+            std::vector<std::unique_ptr<Expression>>{});
+    }
+
     if (match({"("}))
     {
         return parseGrouping();
@@ -405,13 +408,33 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     if (token.getType() == TokenType::Identifier)
     {
         advance();
-        return std::make_unique<Variable>(token.getLexeme());
+        return std::make_unique<VariableExpression>(token.getLexeme());
     }
 
     std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;
     retVal = 65;
     advance();
     return nullptr;
+}
+
+std::unique_ptr<Expression> Parser::parseCall(std::unique_ptr<Expression> callee)
+{
+    std::vector<std::unique_ptr<Expression>> arguments;
+
+    if (!check(")"))
+    {
+        do
+        {
+            arguments.push_back(parseExpression());
+        } while (match({","}));
+    }
+
+    if (!match({")"}))
+    {
+        throw std::runtime_error("Expected ')' after function arguments.");
+    }
+
+    return std::make_unique<CallExpression>(std::move(callee), std::move(arguments));
 }
 
 // Helper function for parsing binary expressions
@@ -425,8 +448,8 @@ std::unique_ptr<Expression> Parser::parseBinary(
     {
         Token operatorToken = tokens[current - 1];  // The matched operator
         auto  right         = subParser();
-        left =
-            std::make_unique<Binary>(std::move(left), operatorToken.getLexeme(), std::move(right));
+        left                = std::make_unique<BinaryExpression>(
+            std::move(left), operatorToken.getLexeme(), std::move(right));
     }
 
     return left;

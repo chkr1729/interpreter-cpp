@@ -1,3 +1,6 @@
+#pragma once
+#include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <optional>
 
@@ -75,7 +78,20 @@ class Result<double> : public ResultBase
 
     bool isTruthy() const override { return value != 0; }  // Zero is false, nonzero is true
 
-    void print() const override { std::cout << value << std::endl; }
+    void print() const override
+    {
+        double intPart;
+        if (std::modf(value, &intPart) == 0)
+        {
+            std::cout << std::fixed << std::setprecision(0) << value << std::endl;
+            std::cout.unsetf(std::ios::fixed | std::ios::scientific);
+            std::cout.precision(6);
+        }
+        else
+        {
+            std::cout << value << std::endl;
+        }
+    }
 
    private:
     double value;

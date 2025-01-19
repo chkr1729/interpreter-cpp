@@ -1,5 +1,7 @@
 #include "Environment.h"
 
+#include "../Function/ClockFunction.h"
+
 void Environment::define(const std::string& name, std::shared_ptr<ResultBase> value)
 {
     variables[name] = std::move(value);
@@ -24,7 +26,7 @@ void Environment::assign(const std::string& name, std::shared_ptr<ResultBase> va
     std::exit(70);
 }
 
-std::shared_ptr<ResultBase> Environment::get(const std::string& name) const
+const std::shared_ptr<ResultBase>& Environment::get(const std::string& name) const
 {
     auto it = variables.find(name);
     if (it != variables.end())
@@ -39,4 +41,9 @@ std::shared_ptr<ResultBase> Environment::get(const std::string& name) const
 
     std::cerr << "Undefined variable '" + name + "'." << std::endl;
     std::exit(70);
+}
+
+void Environment::initializeGlobalScope()
+{
+    define("clock", std::make_shared<ClockFunction>());
 }

@@ -1,6 +1,8 @@
 #include <iostream>
+#include <memory>
 
 #include "CommandLineArgs/CommandLineArgs.h"
+#include "Environment/Environment.h"
 #include "Evaluator/Evaluator.h"
 #include "Parser/Parser.h"
 #include "Parser/ParserError.h"
@@ -18,7 +20,7 @@ int main(int argc, char* argv[])
 
     if (!cmdProcessor.validateArgs())
     {
-        return 1;  // Return error code if arguments are invalid
+        return 1;
     }
 
     const std::string command  = cmdProcessor.getCommand();
@@ -26,19 +28,21 @@ int main(int argc, char* argv[])
 
     // Step 1: Tokenize the input
     Scanner scanner(argument);
-    scanner.process();
-
+    auto    tokens = scanner.scan();
     if (command == "tokenize")
     {
-        scanner.print();
+        for (auto token : tokens)
+        {
+            token.print();
+        }
+        std::cout << "EOF  null" << std::endl;
+
         return scanner.getRetVal();
     }
 
     // Step 2: Parse the tokens into statements
-    Parser parser(scanner.getTokens());
-
-    auto statements = parser.parse();
-
+    Parser parser(std::move(tokens));
+    auto   statements = parser.parse();
     // If parsing failed, we exit
     int parserRetVal = parser.getRetVal();
     if (parserRetVal)
@@ -59,10 +63,13 @@ int main(int argc, char* argv[])
 
     try
     {
+        std::shared_ptr<Environment> globalEnv = std::make_shared<Environment>();
+        globalEnv->initializeGlobalScope();
+
         Evaluator evaluator;
         for (const auto& statement : statements)
         {
-            statement->accept(evaluator);
+            statement->accept(evaluator, globalEnv.get());
         }
     }
     catch (const ParserError& e)

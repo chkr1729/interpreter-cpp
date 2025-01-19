@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../Environment/Environment.h"
+
 // Forward Declarations
 class PrintStatement;
 class ExpressionStatement;
@@ -15,11 +17,16 @@ class StatementVisitor
     virtual ~StatementVisitor() = default;
 
     // Visit methods for different kinds of statements
-    virtual void visitPrintStatement(PrintStatement& statement)           = 0;
-    virtual void visitExpressionStatement(ExpressionStatement& statement) = 0;
-    virtual void visitVariableStatement(VariableStatement& statement)     = 0;
-    virtual void visitBlockStatement(BlockStatement& statement)           = 0;
-    virtual void visitIfStatement(IfStatement& statement)                 = 0;
-    virtual void visitWhileStatement(WhileStatement& statement)           = 0;
-    virtual void visitForStatement(ForStatement& statement)               = 0;
+    virtual void visitPrintStatement(const PrintStatement& statement,
+                                     Environment*          env = nullptr)                              = 0;
+    virtual void visitExpressionStatement(const ExpressionStatement& statement,
+                                          Environment*               env = nullptr)                         = 0;
+    virtual void visitVariableStatement(const VariableStatement& statement,
+                                        Environment*             env = nullptr)                           = 0;
+    virtual void visitBlockStatement(const BlockStatement& statement,
+                                     Environment*          env = nullptr)                              = 0;
+    virtual void visitIfStatement(const IfStatement& statement, Environment* env = nullptr)   = 0;
+    virtual void visitWhileStatement(const WhileStatement& statement,
+                                     Environment*          env = nullptr)                              = 0;
+    virtual void visitForStatement(const ForStatement& statement, Environment* env = nullptr) = 0;
 };

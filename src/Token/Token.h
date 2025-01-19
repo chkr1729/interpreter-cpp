@@ -66,6 +66,8 @@ class Token
 
     size_t size() const { return lexeme.size(); }
 
+    void print() const;
+
    private:
     // State Variable
     TokenCategory category;

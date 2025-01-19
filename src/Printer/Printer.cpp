@@ -2,86 +2,60 @@
 
 #include "../Statement/Statement.h"
 
-// Visit a print statement
-void Printer::visitPrintStatement(PrintStatement& statement)
+void Printer::visitPrintStatement(const PrintStatement& statement, Environment* env)
 {
     auto expr = statement.getExpression();
     if (expr)
     {
-        expr->accept(*this);
+        expr->accept(*this, env);
         std::cout << std::endl;
     }
 }
 
-// Visit an expression statement
-void Printer::visitExpressionStatement(ExpressionStatement& statement)
+void Printer::visitExpressionStatement(const ExpressionStatement& statement, Environment* env)
 {
     auto expr = statement.getExpression();
     if (expr)
     {
-        expr->accept(*this);
+        expr->accept(*this, env);
         std::cout << std::endl;
     }
 }
 
-void Printer::visitVariableStatement(VariableStatement& statement)
+void Printer::visitVariableStatement(const VariableStatement& statement, Environment* env)
 {
     auto expr = statement.getInitializer();
     if (expr)
     {
-        expr->accept(*this);
+        expr->accept(*this, env);
         std::cout << std::endl;
     }
 }
 
-void Printer::visitBlockStatement(BlockStatement& statement)
-{
-    std::cout << std::endl;
-}
-
-void Printer::visitIfStatement(IfStatement& statement)
-{
-    std::cout << std::endl;
-}
-
-void Printer::visitWhileStatement(WhileStatement& statement)
-{
-    std::cout << std::endl;
-}
-
-void Printer::visitForStatement(ForStatement& statement)
-{
-    std::cout << std::endl;
-}
-
-// Visit a literal expression
-void Printer::visitLiteral(const Literal& expr)
+void Printer::visitLiteralExpression(const LiteralExpression& expr, Environment* env)
 {
     std::cout << expr.getValue();
 }
 
-// Visit a grouping expression
-void Printer::visitGrouping(const Grouping& expr)
+void Printer::visitGroupingExpression(const GroupingExpression& expr, Environment* env)
 {
     std::cout << "(group ";
-    expr.getExpression()->accept(*this);
+    expr.getExpression()->accept(*this, env);
     std::cout << ")";
 }
 
-// Visit a unary expression
-void Printer::visitUnary(const Unary& expr)
+void Printer::visitUnaryExpression(const UnaryExpression& expr, Environment* env)
 {
     std::cout << "(" << expr.getOperator() << " ";
-    expr.getRight()->accept(*this);
+    expr.getRight()->accept(*this, env);
     std::cout << ")";
 }
 
-// Visit a binary expression
-void Printer::visitBinary(const Binary& expr)
+void Printer::visitBinaryExpression(const BinaryExpression& expr, Environment* env)
 {
     std::cout << "(" << expr.getOperator() << " ";
-    expr.getLeft()->accept(*this);
+    expr.getLeft()->accept(*this, env);
     std::cout << " ";
-    expr.getRight()->accept(*this);
+    expr.getRight()->accept(*this, env);
     std::cout << ")";
 }

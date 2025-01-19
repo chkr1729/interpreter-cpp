@@ -7,68 +7,38 @@
 
 #include "../Environment/Environment.h"
 #include "../Expression/ExpressionVisitor.h"
+#include "../Statement/Statement.h"
 #include "../Statement/StatementVisitor.h"
 
 class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit both visitors
 {
    public:
-    Evaluator() : environment(std::make_shared<Environment>()) {}
-
-    const std::shared_ptr<ResultBase>& getResult() const { return result; }
-
     // Expression visitor methods
-    void visitLiteral(const Literal& literal) override;
-    void visitUnary(const Unary& unary) override;
-    void visitBinary(const Binary& binary) override;
-    void visitGrouping(const Grouping& grp) override;
-    void visitVariableExpression(const Variable& expression) override;
-    void visitAssignmentExpression(const AssignmentExpression& expr) override;
-    void visitLogicalExpression(const LogicalExpression& expr) override;
+    void visitLiteralExpression(const LiteralExpression& expr, Environment* env) override;
+    void visitUnaryExpression(const UnaryExpression& expr, Environment* env) override;
+    void visitBinaryExpression(const BinaryExpression& expr, Environment* env) override;
+    void visitGroupingExpression(const GroupingExpression& expr, Environment* env) override;
+    void visitVariableExpression(const VariableExpression& expr, Environment* env) override;
+    void visitAssignmentExpression(const AssignmentExpression& expr, Environment* env) override;
+    void visitLogicalExpression(const LogicalExpression& expr, Environment* env) override;
+    void visitCallExpression(const CallExpression& expr, Environment* env) override;
 
     // Statement visitor methods
-    void visitPrintStatement(PrintStatement& statement) override;
-    void visitExpressionStatement(ExpressionStatement& statement) override;
-    void visitVariableStatement(VariableStatement& statement) override;
-    void visitBlockStatement(BlockStatement& statement) override;
-    void visitIfStatement(IfStatement& statement) override;
-    void visitWhileStatement(WhileStatement& statement) override;
-    void visitForStatement(ForStatement& statement) override;
-
-    void printResult() const;
+    void visitPrintStatement(const PrintStatement& statement, Environment* env) override;
+    void visitExpressionStatement(const ExpressionStatement& statement, Environment* env) override;
+    void visitVariableStatement(const VariableStatement& statement, Environment* env) override;
+    void visitBlockStatement(const BlockStatement& statement, Environment* env) override;
+    void visitIfStatement(const IfStatement& statement, Environment* env) override;
+    void visitWhileStatement(const WhileStatement& statement, Environment* env) override;
+    void visitForStatement(const ForStatement& statement, Environment* env) override;
 
    private:
     std::shared_ptr<ResultBase> result;
 
-    std::shared_ptr<Environment> environment;
+    void handleIncompatibleTypes(const std::string& op);
 
-    // Handle arithmetic operators
-    inline static const std::unordered_map<std::string, std::function<double(double, double)>>
-        arithmeticOps = {{"+", [](double lhs, double rhs) { return lhs + rhs; }},
-                         {"-", [](double lhs, double rhs) { return lhs - rhs; }},
-                         {"*", [](double lhs, double rhs) { return lhs * rhs; }},
-                         {"/", [](double lhs, double rhs) {
-                              if (rhs == 0.0) throw std::runtime_error("Division by zero");
-                              return lhs / rhs;
-                          }}};
-
-    // Handle equality operators
-    template <typename T>
-    inline static const std::unordered_map<std::string, std::function<bool(const T&, const T&)>>
-        equalityOps = {
-            {"==", [](const T& lhs, const T& rhs) { return lhs == rhs; }},
-            {"!=", [](const T& lhs, const T& rhs) { return lhs != rhs; }},
-        };
-
-    inline static const std::unordered_map<std::string, std::function<bool(double, double)>>
-        relationalOps = {
-            {">", [](double lhs, double rhs) { return lhs > rhs; }},
-            {"<", [](double lhs, double rhs) { return lhs < rhs; }},
-            {">=", [](double lhs, double rhs) { return lhs >= rhs; }},
-            {"<=", [](double lhs, double rhs) { return lhs <= rhs; }},
-        };
-
-    void handleLogicalOr(const LogicalExpression& expr);
-    void handleLogicalAnd(const LogicalExpression& expr);
+    void handleLogicalOr(const LogicalExpression& expr, Environment* env);
+    void handleLogicalAnd(const LogicalExpression& expr, Environment* env);
 
     void handleBangOperator();
     void handleMinusOperator();
@@ -84,8 +54,6 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
     void handleBoolOperator(const std::shared_ptr<ResultBase>& leftResult,
                             const std::shared_ptr<ResultBase>& rightResult,
                             const std::string&                 op);
-
-    void handleIncompatibleTypes(const std::string& op);
 
     template <typename OperandT, typename ReturnT = OperandT, typename Op>
     void handleBinaryOperation(const std::shared_ptr<ResultBase>& leftResult,

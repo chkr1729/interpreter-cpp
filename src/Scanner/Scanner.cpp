@@ -3,7 +3,9 @@
 #include <cassert>
 #include <cctype>
 #include <cstdlib>
+#include <vector>
 
+#include "../Token/TokenData.h"
 #include "../Utils/FileUtils.h"
 #include "../Utils/StringUtils.h"
 
@@ -121,7 +123,7 @@ std::string Scanner::extractWordToken() const
 Token Scanner::getIdentifierAndReservedWordToken() const
 {
     std::string word = extractWordToken();
-    if (booleanLiterals.find(word) != booleanLiterals.end())
+    if (TokenData::booleanLiterals.find(word) != TokenData::booleanLiterals.end())
     {
         return Token(
             TokenCategory::Literal, TokenType::BooleanLiteral, word, "null", lineNum, false);
@@ -130,7 +132,7 @@ Token Scanner::getIdentifierAndReservedWordToken() const
     {
         return Token(TokenCategory::Literal, TokenType::NilLiteral, word, "null", lineNum, false);
     }
-    if (reservedWords.find(word) != reservedWords.end())
+    if (TokenData::reservedWords.find(word) != TokenData::reservedWords.end())
     {
         return Token(TokenCategory::Word, TokenType::ReservedWord, word, "null", lineNum, false);
     }
@@ -153,7 +155,8 @@ bool Scanner::isMultiCharToken(size_t size) const
 {
     if (index + 1 < fileContents.size())
     {
-        if (multiTokenMap.find(fileContents.substr(index, size)) != multiTokenMap.end())
+        if (TokenData::multiTokenMap.find(fileContents.substr(index, size)) !=
+            TokenData::multiTokenMap.end())
         {
             return true;
         }
@@ -163,7 +166,7 @@ bool Scanner::isMultiCharToken(size_t size) const
 
 bool Scanner::isSingleCharToken() const
 {
-    return tokenMap.find(fileContents[index]) != tokenMap.end();
+    return TokenData::tokenMap.find(fileContents[index]) != TokenData::tokenMap.end();
 }
 
 bool Scanner::isWordToken() const
@@ -235,9 +238,9 @@ Token Scanner::getToken() const
                  true);
 }
 
-// Main processing function
-void Scanner::process()
+std::vector<Token> Scanner::scan()
 {
+    std::vector<Token> tokens;
     while (index < fileContents.size())
     {
         auto token = getToken();
@@ -258,61 +261,5 @@ void Scanner::process()
         }
         tokens.emplace_back(token);
     }
-}
-
-void Scanner::print()
-{
-    for (auto token : tokens)
-    {
-        print(token);
-    }
-    std::cout << "EOF  null" << std::endl;
-}
-
-void Scanner::print(Token token)
-{
-    switch (token.getType())
-    {
-        case TokenType::Whitespace:
-        case TokenType::Comment:
-            break;
-        case TokenType::MultiCharOperator:
-            std::cout << multiTokenMap.at(token.getLexeme()) << std::endl;
-            break;
-        case TokenType::SingleCharOperator:
-            std::cout << tokenMap.at(token.getLexeme().front()) << std::endl;
-            break;
-        case TokenType::StringLiteral:
-            if (token.hasError())
-            {
-                std::cerr << "[line " << token.getLineNumber() << "] Error: Unterminated string."
-                          << std::endl;
-            }
-            else
-            {
-                std::cout << "STRING " << token.getLexeme() << " " << token.getLiteral()
-                          << std::endl;
-            }
-            break;
-        case TokenType::NumberLiteral:
-            std::cout << "NUMBER " << token.getLexeme() << " " << token.getLiteral() << std::endl;
-            break;
-        case TokenType::Identifier:
-            std::cout << "IDENTIFIER " << token.getLexeme() << " " << token.getLiteral()
-                      << std::endl;
-            break;
-        case TokenType::BooleanLiteral:
-        case TokenType::NilLiteral:
-        case TokenType::ReservedWord:
-            std::cout << reservedWords.at(token.getLexeme()) << " " << token.getLexeme() << " "
-                      << token.getLiteral() << std::endl;
-            break;
-        case TokenType::Unexpected:
-            std::cerr << "[line " << token.getLineNumber()
-                      << "] Error: Unexpected character: " << token.getLexeme() << std::endl;
-            break;
-        default:
-            std::cerr << "Unknown" << std::endl;
-            break;
-    }
+    return std::move(tokens);
 }

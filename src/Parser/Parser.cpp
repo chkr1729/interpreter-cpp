@@ -40,17 +40,21 @@ std::unique_ptr<Statement> Parser::parseStatement()
         {
             return parseIfStatement();
         }
-        else if (match({"while"}))
+        if (match({"while"}))
         {
             return parseWhileStatement();
         }
-        else if (match({"for"}))
+        if (match({"for"}))
         {
             return parseForStatement();
         }
-        else if (match({"fun"}))
+        if (match({"fun"}))
         {
             return parseFunctionDefinitionStatement();
+        }
+        if (match({"return"}))
+        {
+            return parseReturnStatement();
         }
         return parseExpressionStatement();
     }
@@ -275,6 +279,23 @@ std::unique_ptr<FunctionDefinitionStatement> Parser::parseFunctionDefinitionStat
 
     return std::make_unique<FunctionDefinitionStatement>(
         std::move(name.getLexeme()), std::move(parameters), std::move(body));
+}
+
+std::unique_ptr<ReturnStatement> Parser::parseReturnStatement()
+{
+    std::unique_ptr<Expression> returnExpr = nullptr;
+
+    if (!check(";"))
+    {
+        returnExpr = parseExpression();
+    }
+
+    if (!match({";"}))
+    {
+        throw ParserError("Expect ';' after return statement.");
+    }
+
+    return std::make_unique<ReturnStatement>(std::move(returnExpr));
 }
 
 std::unique_ptr<Expression> Parser::parseExpression()

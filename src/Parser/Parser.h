@@ -38,6 +38,7 @@ class Parser
     std::unique_ptr<WhileStatement>              parseWhileStatement();
     std::unique_ptr<ForStatement>                parseForStatement();
     std::unique_ptr<FunctionDefinitionStatement> parseFunctionDefinitionStatement();
+    std::unique_ptr<ReturnStatement>             parseReturnStatement();
 
     // Recursive descent parsing methods for expressions
     std::unique_ptr<Expression> parseExpression();

@@ -9,6 +9,7 @@
 class Printer : public StatementVisitor, public ExpressionVisitor
 {
    public:
+    // clang-format off
     void visitPrintStatement(const PrintStatement& statement, Environment* env) override;
     void visitExpressionStatement(const ExpressionStatement& statement, Environment* env) override;
     void visitVariableStatement(const VariableStatement& statement, Environment* env) override;
@@ -16,8 +17,8 @@ class Printer : public StatementVisitor, public ExpressionVisitor
     void visitIfStatement(const IfStatement& statement, Environment* env) override {};
     void visitWhileStatement(const WhileStatement& statement, Environment* env) override {};
     void visitForStatement(const ForStatement& statement, Environment* env) override {};
-    void visitFunctionDefinitionStatement(const FunctionDefinitionStatement& statement,
-                                          Environment*                       env) override {};
+    void visitFunctionDefinitionStatement(const FunctionDefinitionStatement& statement, Environment* env) override {};
+    void visitReturnStatement(const ReturnStatement& statement, Environment* env) override {};
 
     // Expression visitor methods
     void visitLiteralExpression(const LiteralExpression& expr, Environment* env) override;
@@ -28,4 +29,5 @@ class Printer : public StatementVisitor, public ExpressionVisitor
     void visitAssignmentExpression(const AssignmentExpression& expr, Environment* env) override {};
     void visitLogicalExpression(const LogicalExpression& expr, Environment* env) override {};
     void visitCallExpression(const CallExpression& expr, Environment* env) override {};
+    // clang-format on
 };

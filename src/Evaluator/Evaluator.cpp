@@ -120,6 +120,23 @@ void Evaluator::visitFunctionDefinitionStatement(const FunctionDefinitionStateme
     env->define(statement.getName(), std::make_shared<LoxFunction>(functionDef));
 }
 
+void Evaluator::visitReturnStatement(const ReturnStatement& statement, Environment* env)
+{
+    result.reset();
+
+    // If return has an expression, evaluate it
+    if (statement.getExpression())
+    {
+        statement.getExpression()->accept(*this, env);
+    }
+    else
+    {
+        result = std::make_shared<Result<std::nullptr_t>>();
+    }
+
+    throw ReturnException(result);
+}
+
 void Evaluator::visitVariableExpression(const VariableExpression& expression, Environment* env)
 {
     result.reset();

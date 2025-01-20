@@ -206,3 +206,19 @@ class FunctionDefinitionStatement : public Statement
 
     const std::shared_ptr<BlockStatement> body;
 };
+
+class ReturnStatement : public Statement
+{
+   public:
+    explicit ReturnStatement(std::unique_ptr<Expression> expr) : expression(std::move(expr)) {}
+
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        visitor.visitReturnStatement(*this, env);
+    }
+
+    const Expression* getExpression() const { return expression.get(); }
+
+   private:
+    std::unique_ptr<Expression> expression;
+};

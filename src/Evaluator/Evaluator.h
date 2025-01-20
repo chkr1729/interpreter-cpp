@@ -15,16 +15,6 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
    public:
     std::shared_ptr<ResultBase> getResult() { return result; }
     // clang-format off
-    // Expression visitor methods
-    void visitLiteralExpression(const LiteralExpression& expr, Environment* env) override;
-    void visitUnaryExpression(const UnaryExpression& expr, Environment* env) override;
-    void visitBinaryExpression(const BinaryExpression& expr, Environment* env) override;
-    void visitGroupingExpression(const GroupingExpression& expr, Environment* env) override;
-    void visitVariableExpression(const VariableExpression& expr, Environment* env) override;
-    void visitAssignmentExpression(const AssignmentExpression& expr, Environment* env) override;
-    void visitLogicalExpression(const LogicalExpression& expr, Environment* env) override;
-    void visitCallExpression(const CallExpression& expr, Environment* env) override;
-
     // Statement visitor methods
     void visitPrintStatement(const PrintStatement& statement, Environment* env) override;
     void visitExpressionStatement(const ExpressionStatement& statement, Environment* env) override;
@@ -34,6 +24,17 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
     void visitWhileStatement(const WhileStatement& statement, Environment* env) override;
     void visitForStatement(const ForStatement& statement, Environment* env) override;
     void visitFunctionDefinitionStatement(const FunctionDefinitionStatement& statement, Environment* env) override;
+    void visitReturnStatement(const ReturnStatement& statement, Environment* env) override;
+
+    // Expression visitor methods
+    void visitLiteralExpression(const LiteralExpression& expr, Environment* env) override;
+    void visitUnaryExpression(const UnaryExpression& expr, Environment* env) override;
+    void visitBinaryExpression(const BinaryExpression& expr, Environment* env) override;
+    void visitGroupingExpression(const GroupingExpression& expr, Environment* env) override;
+    void visitVariableExpression(const VariableExpression& expr, Environment* env) override;
+    void visitAssignmentExpression(const AssignmentExpression& expr, Environment* env) override;
+    void visitLogicalExpression(const LogicalExpression& expr, Environment* env) override;
+    void visitCallExpression(const CallExpression& expr, Environment* env) override;
     // clang-format on
    private:
     std::shared_ptr<ResultBase> result;

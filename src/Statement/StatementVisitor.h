@@ -11,6 +11,7 @@ class IfStatement;
 class WhileStatement;
 class ForStatement;
 class FunctionDefinitionStatement;
+class ReturnStatement;
 
 class StatementVisitor
 {
@@ -27,5 +28,6 @@ class StatementVisitor
     virtual void visitWhileStatement(const WhileStatement& statement, Environment* env = nullptr) = 0;
     virtual void visitForStatement(const ForStatement& statement, Environment* env = nullptr) = 0;
     virtual void visitFunctionDefinitionStatement(const FunctionDefinitionStatement& statement, Environment* env = nullptr) = 0;
+    virtual void visitReturnStatement(const ReturnStatement& statement, Environment* env = nullptr) = 0;
     // clang-format on
 };

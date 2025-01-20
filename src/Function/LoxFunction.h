@@ -38,7 +38,7 @@ class LoxFunction : public Callable
         return std::make_shared<Result<nullptr_t>>();
     }
 
-    int arity() const override { return 0; }  // No parameters
+    int arity() const override { return definition->getParameters().size(); }  // No parameters
 
     bool isTruthy() const override { return false; }
 

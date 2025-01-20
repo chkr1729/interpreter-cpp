@@ -1,3 +1,4 @@
+#pragma once
 #include <memory>
 
 #include "../Evaluator/Evaluator.h"
@@ -8,12 +9,14 @@
 class LoxFunction : public Callable
 {
    public:
-    explicit LoxFunction(std::shared_ptr<FunctionDefinitionStatement> def) : definition(def) {}
+    explicit LoxFunction(const std::shared_ptr<FunctionDefinitionStatement>& def,
+                         std::shared_ptr<Environment>                        closure)
+        : definition(std::move(def)), closure(std::move(closure))
+    {
+    }
 
     std::shared_ptr<ResultBase> call(
-        Evaluator&                               evaluator,
-        Environment*                             env,
-        std::vector<std::shared_ptr<ResultBase>> arguments) const override;
+        Evaluator& evaluator, std::vector<std::shared_ptr<ResultBase>> arguments) const override;
 
     int arity() const override { return definition->getParameters().size(); }  // No parameters
 
@@ -23,4 +26,6 @@ class LoxFunction : public Callable
 
    private:
     std::shared_ptr<FunctionDefinitionStatement> definition;
+
+    std::shared_ptr<Environment> closure;
 };

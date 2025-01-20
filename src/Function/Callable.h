@@ -11,9 +11,7 @@ class Callable : public ResultBase
     virtual int arity() const = 0;
 
     virtual std::shared_ptr<ResultBase> call(
-        Evaluator&                               evaluator,
-        Environment*                             env,
-        std::vector<std::shared_ptr<ResultBase>> arguments) const = 0;
+        Evaluator& evaluator, std::vector<std::shared_ptr<ResultBase>> arguments) const = 0;
 
     virtual ~Callable() = default;
 };

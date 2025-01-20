@@ -117,14 +117,14 @@ void Evaluator::visitFunctionDefinitionStatement(const FunctionDefinitionStateme
 {
     auto functionDef = std::make_shared<FunctionDefinitionStatement>(
         statement.getName(), statement.getParameters(), statement.getBody());
-    env->define(statement.getName(), std::make_shared<LoxFunction>(functionDef));
+    env->define(statement.getName(),
+                std::make_shared<LoxFunction>(functionDef, env->getSharedPtr()));
 }
 
 void Evaluator::visitReturnStatement(const ReturnStatement& statement, Environment* env)
 {
     result.reset();
 
-    // If return has an expression, evaluate it
     if (statement.getExpression())
     {
         statement.getExpression()->accept(*this, env);
@@ -403,6 +403,7 @@ void Evaluator::visitGroupingExpression(const GroupingExpression& grp, Environme
 
 void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env)
 {
+    result.reset();
     expr.getCallee()->accept(*this, env);
     auto callee = std::dynamic_pointer_cast<Callable>(result);
 
@@ -411,7 +412,6 @@ void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env
         throw std::runtime_error("Attempt to call a non-function object.");
     }
 
-    // Evaluate arguments
     std::vector<std::shared_ptr<ResultBase>> arguments;
     for (const auto& argument : expr.getArguments())
     {
@@ -419,12 +419,10 @@ void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env
         arguments.push_back(result);
     }
 
-    // Ensure correct number of arguments
     if (arguments.size() != callee->arity())
     {
         throw std::runtime_error("Incorrect number of arguments to function.");
     }
 
-    // Call the function
-    result = callee->call(*this, env, arguments);
+    result = callee->call(*this, arguments);
 }

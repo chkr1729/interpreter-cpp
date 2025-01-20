@@ -2,14 +2,10 @@
 #include "LoxFunction.h"
 
 std::shared_ptr<ResultBase> LoxFunction::call(
-    Evaluator&                               evaluator,
-    Environment*                             env,
-    std::vector<std::shared_ptr<ResultBase>> arguments) const
+    Evaluator& evaluator, std::vector<std::shared_ptr<ResultBase>> arguments) const
 {
-    std::shared_ptr<Environment> localEnv =
-        env ? std::make_shared<Environment>(env->getSharedPtr()) : std::make_shared<Environment>();
+    std::shared_ptr<Environment> localEnv = std::make_shared<Environment>(closure);
 
-    // Bind parameters to arguments
     const auto& params = definition->getParameters();
     if (params.size() != arguments.size())
     {

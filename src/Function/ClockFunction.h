@@ -9,9 +9,7 @@ class ClockFunction : public Callable
     int arity() const override { return 0; }  // No parameters
 
     std::shared_ptr<ResultBase> call(
-        Evaluator&                               evaluator,
-        Environment*                             env,
-        std::vector<std::shared_ptr<ResultBase>> arguments) const override
+        Evaluator& evaluator, std::vector<std::shared_ptr<ResultBase>> arguments) const override
     {
         using namespace std::chrono;
         auto secondsSinceEpoch =

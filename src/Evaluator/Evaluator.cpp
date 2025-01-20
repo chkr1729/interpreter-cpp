@@ -48,7 +48,8 @@ void Evaluator::visitVariableStatement(const VariableStatement& statement, Envir
 
 void Evaluator::visitBlockStatement(const BlockStatement& statement, Environment* env)
 {
-    auto blockEnv = std::make_shared<Environment>(env->getSharedPtr());
+    auto blockEnv =
+        env ? std::make_shared<Environment>(env->getSharedPtr()) : std::make_shared<Environment>();
     for (const auto& stmnt : statement.getStatements())
     {
         stmnt->accept(*this, blockEnv.get());
@@ -122,7 +123,7 @@ void Evaluator::visitFunctionDefinitionStatement(const FunctionDefinitionStateme
 void Evaluator::visitVariableExpression(const VariableExpression& expression, Environment* env)
 {
     result.reset();
-    std::shared_ptr<ResultBase> value = env->get(expression.getName());
+    auto value = (env) ? env->get(expression.getName()) : nullptr;
     if (value)
     {
         result = value;
@@ -143,47 +144,19 @@ void Evaluator::visitAssignmentExpression(const AssignmentExpression& expr, Envi
     }
 }
 
-void Evaluator::handleLogicalOr(const LogicalExpression& expr, Environment* env)
-{
-    result.reset();
-    expr.getLeft()->accept(*this, env);
-    auto leftResult = std::move(result);
-    if (leftResult->isTruthy())
-    {
-        result = std::move(leftResult);
-        return;
-    }
-    expr.getRight()->accept(*this, env);
-    return;
-}
-
-void Evaluator::handleLogicalAnd(const LogicalExpression& expr, Environment* env)
-{
-    result.reset();
-    expr.getLeft()->accept(*this, env);
-    auto leftResult = std::move(result);
-    if (leftResult->isTruthy())
-    {
-        result.reset();
-        expr.getRight()->accept(*this, env);
-        return;
-    }
-    result = std::move(leftResult);
-    return;
-}
-
 void Evaluator::visitLogicalExpression(const LogicalExpression& expr, Environment* env)
 {
     const auto op = expr.getOperator();
-
-    if (op == "or")
+    expr.getLeft()->accept(*this, env);
+    if (op == "or" && result->isTruthy())
     {
-        handleLogicalOr(expr, env);
+        return;
     }
-    else if (op == "and")
+    if (op == "and" && !result->isTruthy())
     {
-        handleLogicalAnd(expr, env);
+        return;
     }
+    expr.getRight()->accept(*this, env);
 }
 
 void Evaluator::visitLiteralExpression(const LiteralExpression& literal, Environment* env)

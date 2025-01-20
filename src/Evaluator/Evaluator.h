@@ -40,9 +40,6 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
 
     void handleIncompatibleTypes(const std::string& op);
 
-    void handleLogicalOr(const LogicalExpression& expr, Environment* env);
-    void handleLogicalAnd(const LogicalExpression& expr, Environment* env);
-
     void handleBangOperator();
     void handleMinusOperator();
 

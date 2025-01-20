@@ -43,17 +43,17 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
     void handleBangOperator();
     void handleMinusOperator();
 
-    void handleNumberOperator(const std::shared_ptr<ResultBase>& leftResult,
-                              const std::shared_ptr<ResultBase>& rightResult,
-                              const std::string&                 op);
+    void handleNumbersOperation(const std::shared_ptr<Result<double>>& leftResult,
+                                const std::shared_ptr<Result<double>>& rightResult,
+                                const std::string&                     op);
 
-    void handleStringOperator(const std::shared_ptr<ResultBase>& leftResult,
-                              const std::shared_ptr<ResultBase>& rightResult,
-                              const std::string&                 op);
+    void handleStringsOperation(const std::shared_ptr<Result<std::string>>& leftResult,
+                                const std::shared_ptr<Result<std::string>>& rightResult,
+                                const std::string&                          op);
 
-    void handleBoolOperator(const std::shared_ptr<ResultBase>& leftResult,
-                            const std::shared_ptr<ResultBase>& rightResult,
-                            const std::string&                 op);
+    void handleBoolsOperation(const std::shared_ptr<Result<bool>>& leftResult,
+                              const std::shared_ptr<Result<bool>>& rightResult,
+                              const std::string&                   op);
 
     template <typename OperandT, typename ReturnT = OperandT, typename Op>
     void handleBinaryOperation(const std::shared_ptr<ResultBase>& leftResult,
@@ -61,8 +61,8 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
                                const std::string&                 errorMsg,
                                Op                                 operation)
     {
-        auto left  = dynamic_cast<Result<OperandT>*>(leftResult.get());
-        auto right = dynamic_cast<Result<OperandT>*>(rightResult.get());
+        auto left  = std::dynamic_pointer_cast<Result<OperandT>>(leftResult);
+        auto right = std::dynamic_pointer_cast<Result<OperandT>>(rightResult);
 
         if (left && right)
         {

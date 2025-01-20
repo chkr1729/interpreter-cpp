@@ -250,9 +250,9 @@ void Evaluator::visitUnaryExpression(const UnaryExpression& unary, Environment* 
     }
 }
 
-void Evaluator::handleNumberOperator(const std::shared_ptr<ResultBase>& leftResult,
-                                     const std::shared_ptr<ResultBase>& rightResult,
-                                     const std::string&                 op)
+void Evaluator::handleNumbersOperation(const std::shared_ptr<Result<double>>& leftResult,
+                                       const std::shared_ptr<Result<double>>& rightResult,
+                                       const std::string&                     op)
 {
     auto it = Operators::arithmeticOps.find(op);
     if (it != Operators::arithmeticOps.end())
@@ -282,9 +282,9 @@ void Evaluator::handleNumberOperator(const std::shared_ptr<ResultBase>& leftResu
     std::exit(70);
 }
 
-void Evaluator::handleStringOperator(const std::shared_ptr<ResultBase>& leftResult,
-                                     const std::shared_ptr<ResultBase>& rightResult,
-                                     const std::string&                 op)
+void Evaluator::handleStringsOperation(const std::shared_ptr<Result<std::string>>& leftResult,
+                                       const std::shared_ptr<Result<std::string>>& rightResult,
+                                       const std::string&                          op)
 {
     auto eqIt = Operators::equalityOps<std::string>.find(op);
     if (eqIt != Operators::equalityOps<std::string>.end())
@@ -308,9 +308,9 @@ void Evaluator::handleStringOperator(const std::shared_ptr<ResultBase>& leftResu
     std::exit(70);
 }
 
-void Evaluator::handleBoolOperator(const std::shared_ptr<ResultBase>& leftResult,
-                                   const std::shared_ptr<ResultBase>& rightResult,
-                                   const std::string&                 op)
+void Evaluator::handleBoolsOperation(const std::shared_ptr<Result<bool>>& leftResult,
+                                     const std::shared_ptr<Result<bool>>& rightResult,
+                                     const std::string&                   op)
 {
     auto eqIt = Operators::equalityOps<bool>.find(op);
     if (eqIt != Operators::equalityOps<bool>.end())
@@ -349,26 +349,29 @@ void Evaluator::visitBinaryExpression(const BinaryExpression& binary, Environmen
     const auto& op = binary.getOperator();
 
     // Handle number operators
-    if (dynamic_cast<Result<double>*>(leftResult.get()) &&
-        dynamic_cast<Result<double>*>(rightResult.get()))
+    auto leftNum  = std::dynamic_pointer_cast<Result<double>>(leftResult);
+    auto rightNum = std::dynamic_pointer_cast<Result<double>>(rightResult);
+    if (leftNum && rightNum)
     {
-        handleNumberOperator(leftResult, rightResult, op);
+        handleNumbersOperation(leftNum, rightNum, op);
         return;
     }
 
     // Handle string operators
-    if (dynamic_cast<Result<std::string>*>(leftResult.get()) &&
-        dynamic_cast<Result<std::string>*>(rightResult.get()))
+    auto leftString  = std::dynamic_pointer_cast<Result<std::string>>(leftResult);
+    auto rightString = std::dynamic_pointer_cast<Result<std::string>>(rightResult);
+    if (leftString && rightString)
     {
-        handleStringOperator(leftResult, rightResult, op);
+        handleStringsOperation(leftString, rightString, op);
         return;
     }
 
     // Handle bools
-    if (dynamic_cast<Result<bool>*>(leftResult.get()) &&
-        dynamic_cast<Result<bool>*>(rightResult.get()))
+    auto leftBool  = std::dynamic_pointer_cast<Result<bool>>(leftResult);
+    auto rightBool = std::dynamic_pointer_cast<Result<bool>>(rightResult);
+    if (leftBool && rightBool)
     {
-        handleBoolOperator(leftResult, rightResult, op);
+        handleBoolsOperation(leftBool, rightBool, op);
         return;
     }
 

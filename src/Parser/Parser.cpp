@@ -310,7 +310,7 @@ std::unique_ptr<Expression> Parser::parseOr()
     while (match({"or"}))
     {
         Token operatorToken = tokens[current - 1];  // The matched 'or' operator
-        auto  right         = parseAnd();
+        auto  right         = parseOr();
         left                = std::make_unique<LogicalExpression>(
             std::move(left), operatorToken.getLexeme(), std::move(right));
     }
@@ -325,7 +325,7 @@ std::unique_ptr<Expression> Parser::parseAnd()
     while (match({"and"}))
     {
         Token operatorToken = tokens[current - 1];
-        auto  right         = parseComparison();
+        auto  right         = parseAnd();
         left                = std::make_unique<LogicalExpression>(
             std::move(left), operatorToken.getLexeme(), std::move(right));
     }

@@ -426,11 +426,11 @@ void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env
         arguments.push_back(result);
     }
 
-    // Ensure correct number of arguments
-    if (arguments.size() != callee->arity())
-    {
-        throw std::runtime_error("Incorrect number of arguments to function.");
-    }
+    // // Ensure correct number of arguments
+    // if (arguments.size() != callee->arity())
+    // {
+    //     throw std::runtime_error("Incorrect number of arguments to function.");
+    // }
 
     // Call the function
     result = callee->call(*this, env, arguments);

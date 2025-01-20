@@ -29,14 +29,15 @@ class Parser
     int retVal = 0;
 
     // Recursive descent parsing methods for statements
-    std::unique_ptr<Statement>           parseStatement();
-    std::unique_ptr<PrintStatement>      parsePrintStatement();
-    std::unique_ptr<ExpressionStatement> parseExpressionStatement();
-    std::unique_ptr<VariableStatement>   parseVariableStatement();
-    std::unique_ptr<BlockStatement>      parseBlockStatement();
-    std::unique_ptr<IfStatement>         parseIfStatement();
-    std::unique_ptr<WhileStatement>      parseWhileStatement();
-    std::unique_ptr<ForStatement>        parseForStatement();
+    std::unique_ptr<Statement>                   parseStatement();
+    std::unique_ptr<PrintStatement>              parsePrintStatement();
+    std::unique_ptr<ExpressionStatement>         parseExpressionStatement();
+    std::unique_ptr<VariableStatement>           parseVariableStatement();
+    std::unique_ptr<BlockStatement>              parseBlockStatement();
+    std::unique_ptr<IfStatement>                 parseIfStatement();
+    std::unique_ptr<WhileStatement>              parseWhileStatement();
+    std::unique_ptr<ForStatement>                parseForStatement();
+    std::unique_ptr<FunctionDefinitionStatement> parseFunctionDefinitionStatement();
 
     // Recursive descent parsing methods for expressions
     std::unique_ptr<Expression> parseExpression();

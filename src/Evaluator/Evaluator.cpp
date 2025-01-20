@@ -5,6 +5,7 @@
 
 #include "../Expression/Expression.h"
 #include "../Function/Callable.h"
+#include "../Function/LoxFunction.h"
 #include "../Operators/Operators.h"
 #include "../Statement/Statement.h"
 
@@ -108,6 +109,14 @@ void Evaluator::visitForStatement(const ForStatement& statement, Environment* en
             statement.getIncrement()->accept(*this, env);
         }
     }
+}
+
+void Evaluator::visitFunctionDefinitionStatement(const FunctionDefinitionStatement& statement,
+                                                 Environment*                       env)
+{
+    auto functionDef = std::make_shared<FunctionDefinitionStatement>(
+        statement.getName(), statement.getParameters(), statement.getBody());
+    env->define(statement.getName(), std::make_shared<LoxFunction>(functionDef));
 }
 
 void Evaluator::visitVariableExpression(const VariableExpression& expression, Environment* env)
@@ -424,5 +433,5 @@ void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env
     }
 
     // Call the function
-    result = callee->call(arguments);
+    result = callee->call(*this, env, arguments);
 }

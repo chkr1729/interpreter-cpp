@@ -16,6 +16,8 @@ class Printer : public StatementVisitor, public ExpressionVisitor
     void visitIfStatement(const IfStatement& statement, Environment* env) override {};
     void visitWhileStatement(const WhileStatement& statement, Environment* env) override {};
     void visitForStatement(const ForStatement& statement, Environment* env) override {};
+    void visitFunctionDefinitionStatement(const FunctionDefinitionStatement& statement,
+                                          Environment*                       env) override {};
 
     // Expression visitor methods
     void visitLiteralExpression(const LiteralExpression& expr, Environment* env) override;

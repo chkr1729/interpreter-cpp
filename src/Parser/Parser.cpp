@@ -48,6 +48,10 @@ std::unique_ptr<Statement> Parser::parseStatement()
         {
             return parseForStatement();
         }
+        else if (match({"fun"}))
+        {
+            return parseFunctionDefinitionStatement();
+        }
         return parseExpressionStatement();
     }
     catch (const ParserError& e)
@@ -244,6 +248,46 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
         std::move(initializer), std::move(condition), std::move(increment), std::move(body));
 }
 
+std::unique_ptr<FunctionDefinitionStatement> Parser::parseFunctionDefinitionStatement()
+{
+    Token name = advance();
+    if (!match({"("}))
+    {
+        std::cerr << "Expect '(' after function name." << std::endl;
+        std::exit(70);
+    }
+
+    std::vector<std::string> parameters;
+    if (!check({")"}))
+    {
+        do
+        {
+            auto token = advance();
+            if (token.getType() != TokenType::Identifier)
+            {
+                std::cerr << "Expect a parameter name. " << std::endl;
+                std::exit(70);
+            }
+            parameters.push_back(token.getLexeme());
+        } while (match({","}));
+    }
+    if (!match({")"}))
+    {
+        std::cerr << "Expect ')' after parameter." << std::endl;
+        std::exit(70);
+    }
+    if (!match({"{"}))
+    {
+        std::cerr << "Expect '{' before function body." << std::endl;
+        std::exit(70);
+    }
+
+    std::unique_ptr<BlockStatement> body = parseBlockStatement();
+
+    return std::make_unique<FunctionDefinitionStatement>(
+        std::move(name.getLexeme()), std::move(parameters), std::move(body));
+}
+
 std::unique_ptr<Expression> Parser::parseExpression()
 {
     return parseOr();
@@ -331,7 +375,7 @@ std::unique_ptr<Expression> Parser::parseUnary()
         auto  right         = parseUnary();         // Recursively parse the operand
         return std::make_unique<UnaryExpression>(operatorToken.getLexeme(), std::move(right));
     }
-    return parsePrimary();
+    return parseCall(parsePrimary());
 }
 
 std::unique_ptr<GroupingExpression> Parser::parseGrouping()
@@ -408,7 +452,14 @@ std::unique_ptr<Expression> Parser::parsePrimary()
     if (token.getType() == TokenType::Identifier)
     {
         advance();
-        return std::make_unique<VariableExpression>(token.getLexeme());
+        std::unique_ptr<Expression> expr = std::make_unique<VariableExpression>(token.getLexeme());
+
+        // If the next token is '(', it means we're parsing a function call
+        if (check({"("}))
+        {
+            expr = parseCall(std::move(expr));
+        }
+        return expr;
     }
 
     std::cerr << "Error: Unexpected token: " << peek().getLexeme() << std::endl;
@@ -419,22 +470,26 @@ std::unique_ptr<Expression> Parser::parsePrimary()
 
 std::unique_ptr<Expression> Parser::parseCall(std::unique_ptr<Expression> callee)
 {
-    std::vector<std::unique_ptr<Expression>> arguments;
-
-    if (!check(")"))
+    while (match({"("}))
     {
-        do
+        std::vector<std::unique_ptr<Expression>> arguments;
+
+        if (!check(")"))
         {
-            arguments.push_back(parseExpression());
-        } while (match({","}));
-    }
+            do
+            {
+                arguments.push_back(parseExpression());
+            } while (match({","}));
+        }
 
-    if (!match({")"}))
-    {
-        throw std::runtime_error("Expected ')' after function arguments.");
-    }
+        if (!match({")"}))
+        {
+            throw std::runtime_error("Expected ')' after function arguments.");
+        }
 
-    return std::make_unique<CallExpression>(std::move(callee), std::move(arguments));
+        callee = std::make_unique<CallExpression>(std::move(callee), std::move(arguments));
+    }
+    return callee;
 }
 
 // Helper function for parsing binary expressions

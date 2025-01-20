@@ -177,3 +177,32 @@ class ForStatement : public Statement
     const std::unique_ptr<Expression> increment;
     const std::unique_ptr<Statement>  body;
 };
+
+class FunctionDefinitionStatement : public Statement
+{
+   public:
+    FunctionDefinitionStatement(const std::string&              name,
+                                std::vector<std::string>        parameters,
+                                std::shared_ptr<BlockStatement> body)
+        : name(name), parameters(std::move(parameters)), body(std::move(body))
+    {
+    }
+
+    void accept(StatementVisitor& visitor, Environment* env = nullptr) const override
+    {
+        visitor.visitFunctionDefinitionStatement(*this, env);
+    }
+
+    const std::string& getName() const { return name; }
+
+    const std::vector<std::string>& getParameters() const { return parameters; }
+
+    const std::shared_ptr<BlockStatement> getBody() const { return body; }
+
+   private:
+    const std::string name;
+
+    const std::vector<std::string> parameters;
+
+    const std::shared_ptr<BlockStatement> body;
+};

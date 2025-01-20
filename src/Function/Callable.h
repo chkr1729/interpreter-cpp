@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 
+#include "../Evaluator/Evaluator.h"
 #include "../Result/Result.h"
 
 class Callable : public ResultBase
@@ -10,7 +11,9 @@ class Callable : public ResultBase
     virtual int arity() const = 0;
 
     virtual std::shared_ptr<ResultBase> call(
-        std::vector<std::shared_ptr<ResultBase>> arguments) = 0;
+        Evaluator&                               evaluator,
+        Environment*                             env,
+        std::vector<std::shared_ptr<ResultBase>> arguments) const = 0;
 
     virtual ~Callable() = default;
 };

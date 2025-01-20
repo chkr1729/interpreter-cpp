@@ -13,6 +13,8 @@
 class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit both visitors
 {
    public:
+    std::shared_ptr<ResultBase> getResult() { return result; }
+    // clang-format off
     // Expression visitor methods
     void visitLiteralExpression(const LiteralExpression& expr, Environment* env) override;
     void visitUnaryExpression(const UnaryExpression& expr, Environment* env) override;
@@ -31,7 +33,8 @@ class Evaluator : public ExpressionVisitor, public StatementVisitor  // Inherit 
     void visitIfStatement(const IfStatement& statement, Environment* env) override;
     void visitWhileStatement(const WhileStatement& statement, Environment* env) override;
     void visitForStatement(const ForStatement& statement, Environment* env) override;
-
+    void visitFunctionDefinitionStatement(const FunctionDefinitionStatement& statement, Environment* env) override;
+    // clang-format on
    private:
     std::shared_ptr<ResultBase> result;
 

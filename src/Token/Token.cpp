@@ -29,14 +29,14 @@ void Token::print() const
         case TokenType::NumberLiteral:
             std::cout << "NUMBER " << lexeme << " " << literal << std::endl;
             break;
-        case TokenType::Identifier:
-            std::cout << "IDENTIFIER " << lexeme << " " << literal << std::endl;
-            break;
         case TokenType::BooleanLiteral:
         case TokenType::NilLiteral:
         case TokenType::ReservedWord:
             std::cout << TokenData::reservedWords.at(lexeme) << " " << lexeme << " " << literal
                       << std::endl;
+            break;
+        case TokenType::Identifier:
+            std::cout << "IDENTIFIER " << lexeme << " " << literal << std::endl;
             break;
         case TokenType::Unexpected:
             std::cerr << "[line " << lineNumber << "] Error: Unexpected character: " << lexeme

@@ -5,5 +5,13 @@
 class ParserError : public std::runtime_error
 {
    public:
-    explicit ParserError(const std::string& message) : std::runtime_error(message) {}
+    ParserError(const std::string& message, size_t lineNum)
+        : std::runtime_error(message), lineNum(lineNum)
+    {
+    }
+
+    size_t getLineNum() const { return lineNum; }
+
+   private:
+    size_t lineNum;
 };

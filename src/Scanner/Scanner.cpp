@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <vector>
 
+#include "../Parser/ParserError.h"
 #include "../Token/TokenData.h"
 #include "../Utils/FileUtils.h"
 #include "../Utils/StringUtils.h"
@@ -38,6 +39,7 @@ Token Scanner::getStringLiteralToken() const
 
     if (endIndex == std::string::npos)
     {
+        // throw ParserError("Unterminated string.", lineNum);
         endIndex = fileContents.size();
         return Token(TokenCategory::Literal,
                      TokenType::StringLiteral,

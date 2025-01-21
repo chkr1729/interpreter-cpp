@@ -22,48 +22,39 @@ std::vector<std::unique_ptr<Statement>> Parser::parse()
 
 std::unique_ptr<Statement> Parser::parseStatement()
 {
-    try
+    if (match({"var"}))
     {
-        if (match({"var"}))
-        {
-            return parseVariableStatement();
-        }
-        if (match({"print"}))
-        {
-            return parsePrintStatement();
-        }
-        if (match({"{"}))
-        {
-            return parseBlockStatement();
-        }
-        if (match({"if"}))
-        {
-            return parseIfStatement();
-        }
-        if (match({"while"}))
-        {
-            return parseWhileStatement();
-        }
-        if (match({"for"}))
-        {
-            return parseForStatement();
-        }
-        if (match({"fun"}))
-        {
-            return parseFunctionDefinitionStatement();
-        }
-        if (match({"return"}))
-        {
-            return parseReturnStatement();
-        }
-        return parseExpressionStatement();
+        return parseVariableStatement();
     }
-    catch (const ParserError& e)
+    if (match({"print"}))
     {
-        std::cerr << "[line " << peek().getLineNumber() << "] Syntax Error: " << e.what()
-                  << std::endl;
-        std::exit(65);
+        return parsePrintStatement();
     }
+    if (match({"{"}))
+    {
+        return parseBlockStatement();
+    }
+    if (match({"if"}))
+    {
+        return parseIfStatement();
+    }
+    if (match({"while"}))
+    {
+        return parseWhileStatement();
+    }
+    if (match({"for"}))
+    {
+        return parseForStatement();
+    }
+    if (match({"fun"}))
+    {
+        return parseFunctionDefinitionStatement();
+    }
+    if (match({"return"}))
+    {
+        return parseReturnStatement();
+    }
+    return parseExpressionStatement();
 }
 
 std::unique_ptr<PrintStatement> Parser::parsePrintStatement()
@@ -71,7 +62,7 @@ std::unique_ptr<PrintStatement> Parser::parsePrintStatement()
     auto expression = parseExpression();
     if (!match({";"}))
     {
-        throw ParserError("Missing ';' after print statement.");
+        throw ParserError("Missing ';' after print statement.", peek().getLineNumber());
     }
     return std::make_unique<PrintStatement>(std::move(expression));
 }
@@ -89,7 +80,7 @@ std::unique_ptr<ExpressionStatement> Parser::parseExpressionStatement()
     }
     if (!match({";"}))
     {
-        throw ParserError("Missing ';' after expression statement.");
+        throw ParserError("Missing ';' after expression statement.", peek().getLineNumber());
     }
     return std::make_unique<ExpressionStatement>(std::move(expression), false);
 }
@@ -100,7 +91,7 @@ std::unique_ptr<VariableStatement> Parser::parseVariableStatement()
 
     if (var.getType() != TokenType::Identifier)
     {
-        throw ParserError(" Expected variable name after 'var'.");
+        throw ParserError(" Expected variable name after 'var'.", peek().getLineNumber());
     }
 
     std::string name = var.getLexeme();
@@ -113,7 +104,7 @@ std::unique_ptr<VariableStatement> Parser::parseVariableStatement()
 
     if (!match({";"}))
     {
-        throw ParserError("Missing ';' after variable declaration.");
+        throw ParserError("Missing ';' after variable declaration.", peek().getLineNumber());
     }
 
     return std::make_unique<VariableStatement>(name, std::move(initializer));
@@ -130,7 +121,7 @@ std::unique_ptr<BlockStatement> Parser::parseBlockStatement()
 
     if (!match({"}"}))
     {
-        throw ParserError("Expected '}' to close block.");
+        throw ParserError("Expected '}' to close block.", peek().getLineNumber());
     }
 
     return std::make_unique<BlockStatement>(std::move(statements));
@@ -140,14 +131,14 @@ std::unique_ptr<IfStatement> Parser::parseIfStatement()
 {
     if (!match({"("}))
     {
-        throw ParserError("Expected '(' after if.");
+        throw ParserError("Expected '(' after if.", peek().getLineNumber());
     }
 
     auto condition = parseExpression();
 
     if (!match({")"}))
     {
-        throw ParserError("Expected ')' after if condition.");
+        throw ParserError("Expected ')' after if condition.", peek().getLineNumber());
     }
 
     auto thenBranch = parseStatement();
@@ -166,14 +157,14 @@ std::unique_ptr<WhileStatement> Parser::parseWhileStatement()
 {
     if (!match({"("}))
     {
-        throw ParserError("Expected '(' after while.");
+        throw ParserError("Expected '(' after while.", peek().getLineNumber());
     }
 
     auto condition = parseExpression();
 
     if (!match({")"}))
     {
-        throw ParserError("Expected ')' after while condition.");
+        throw ParserError("Expected ')' after while condition.", peek().getLineNumber());
     }
 
     auto body = parseStatement();
@@ -185,7 +176,7 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
 {
     if (!match({"("}))
     {
-        throw ParserError("Expected '(' after 'for'.");
+        throw ParserError("Expected '(' after 'for'.", peek().getLineNumber());
     }
 
     // Parse initializer
@@ -195,7 +186,7 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
         initializer = parseStatement();
         if (!initializer)
         {
-            throw ParserError("Expected expression in 'for' initializer.");
+            throw ParserError("Expected expression in 'for' initializer.", peek().getLineNumber());
         }
     }
 
@@ -206,11 +197,11 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
         condition = parseExpression();
         if (!condition)
         {
-            throw ParserError("Expected condition in 'for' loop.");
+            throw ParserError("Expected condition in 'for' loop.", peek().getLineNumber());
         }
         if (!match({";"}))
         {
-            throw ParserError("Expected ';' after condition.");
+            throw ParserError("Expected ';' after condition.", peek().getLineNumber());
         }
     }
 
@@ -221,11 +212,11 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
         increment = parseExpression();
         if (!increment)
         {
-            throw ParserError("Expected expression in 'for' increment.");
+            throw ParserError("Expected expression in 'for' increment.", peek().getLineNumber());
         }
         if (!match({")"}))
         {
-            throw ParserError("Expected ')' after 'for' increment.");
+            throw ParserError("Expected ')' after 'for' increment.", peek().getLineNumber());
         }
     }
 
@@ -233,12 +224,13 @@ std::unique_ptr<ForStatement> Parser::parseForStatement()
     auto body = parseStatement();
     if (!body)
     {
-        throw ParserError("Expected statement after 'for' loop.");
+        throw ParserError("Expected statement after 'for' loop.", peek().getLineNumber());
     }
 
     if (dynamic_cast<VariableStatement*>(body.get()))
     {
-        throw ParserError("Variable declaration not allowed inside 'for' loop.");
+        throw ParserError("Variable declaration not allowed inside 'for' loop.",
+                          peek().getLineNumber());
     }
 
     return std::make_unique<ForStatement>(
@@ -250,7 +242,7 @@ std::unique_ptr<FunctionDefinitionStatement> Parser::parseFunctionDefinitionStat
     Token name = advance();
     if (!match({"("}))
     {
-        throw ParserError("Expect '(' after function name.");
+        throw ParserError("Expect '(' after function name.", peek().getLineNumber());
     }
 
     std::vector<std::string> parameters;
@@ -261,18 +253,18 @@ std::unique_ptr<FunctionDefinitionStatement> Parser::parseFunctionDefinitionStat
             auto token = advance();
             if (token.getType() != TokenType::Identifier)
             {
-                throw ParserError("Expect a parameter name.");
+                throw ParserError("Expect a parameter name.", peek().getLineNumber());
             }
             parameters.push_back(token.getLexeme());
         } while (match({","}));
     }
     if (!match({")"}))
     {
-        throw ParserError("Expect ')' after parameter.");
+        throw ParserError("Expect ')' after parameter.", peek().getLineNumber());
     }
     if (!match({"{"}))
     {
-        throw ParserError("Expect '{' before function body.");
+        throw ParserError("Expect '{' before function body.", peek().getLineNumber());
     }
 
     std::unique_ptr<BlockStatement> body = parseBlockStatement();
@@ -292,7 +284,7 @@ std::unique_ptr<ReturnStatement> Parser::parseReturnStatement()
 
     if (!match({";"}))
     {
-        throw ParserError("Expect ';' after return statement.");
+        throw ParserError("Expect ';' after return statement.", peek().getLineNumber());
     }
 
     return std::make_unique<ReturnStatement>(std::move(returnExpr));
@@ -347,7 +339,7 @@ std::unique_ptr<Expression> Parser::parseAssignment()
             return std::make_unique<AssignmentExpression>(variable->getName(), std::move(right));
         }
 
-        throw ParserError("Invalid assignment target.");
+        throw ParserError("Invalid assignment target.", peek().getLineNumber());
     }
 
     return left;
@@ -389,7 +381,7 @@ std::unique_ptr<GroupingExpression> Parser::parseGrouping()
     auto expression = parseExpression();
     if (!match({")"}))
     {
-        throw ParserError("Missing closing parenthesis");
+        throw ParserError("Missing closing parenthesis", peek().getLineNumber());
     }
     return std::make_unique<GroupingExpression>(std::move(expression));
 }
@@ -417,12 +409,12 @@ std::unique_ptr<LiteralExpression> Parser::parseLiteral()
         case TokenType::StringLiteral:
             if (literalToken.hasError())
             {
-                throw ParserError("Unterminated String Literal.");
+                throw ParserError("Unterminated String Literal.", peek().getLineNumber());
             }
             literalExp = std::make_unique<LiteralExpression>(literalValue, LiteralType::String);
             break;
         default:
-            throw ParserError(literalLexeme + "is not a Literal Token ");
+            throw ParserError(literalLexeme + "is not a Literal Token ", peek().getLineNumber());
     }
     return literalExp;
 }
@@ -454,7 +446,7 @@ std::unique_ptr<Expression> Parser::parsePrimary()
         }
         return expr;
     }
-    throw ParserError("Unexpected Token: " + peek().getLexeme());
+    throw ParserError("Unexpected Token: " + peek().getLexeme(), peek().getLineNumber());
 }
 
 std::unique_ptr<Expression> Parser::parseCall(std::unique_ptr<Expression> callee)
@@ -473,7 +465,7 @@ std::unique_ptr<Expression> Parser::parseCall(std::unique_ptr<Expression> callee
 
         if (!match({")"}))
         {
-            throw ParserError("Expected ')' after function arguments.");
+            throw ParserError("Expected ')' after function arguments.", peek().getLineNumber());
         }
 
         callee = std::make_unique<CallExpression>(std::move(callee), std::move(arguments));

@@ -41,22 +41,22 @@ int main(int argc, char* argv[])
     }
 
     // Step 2: Parse the tokens into statements
-    Parser parser(std::move(tokens));
-    auto   statements = parser.parse();
-
-    // Step 3: Handle commands
-    if (command == "parse")
-    {
-        Printer printer;
-        for (const auto& statement : statements)
-        {
-            statement->accept(printer);
-        }
-        return 0;
-    }
-
     try
     {
+        Parser parser(std::move(tokens));
+        auto   statements = parser.parse();
+
+        // Step 3: Handle commands
+        if (command == "parse")
+        {
+            Printer printer;
+            for (const auto& statement : statements)
+            {
+                statement->accept(printer);
+            }
+            return 0;
+        }
+
         std::shared_ptr<Environment> globalEnv = std::make_shared<Environment>();
         globalEnv->initializeGlobalScope();
 

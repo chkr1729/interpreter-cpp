@@ -4,6 +4,7 @@
 #include "CommandLineArgs/CommandLineArgs.h"
 #include "Environment/Environment.h"
 #include "Evaluator/Evaluator.h"
+#include "Evaluator/EvaluatorError.h"
 #include "Parser/Parser.h"
 #include "Parser/ParserError.h"
 #include "Printer/Printer.h"
@@ -68,8 +69,14 @@ int main(int argc, char* argv[])
     }
     catch (const ParserError& e)
     {
-        std::cerr << "Syntax Error: " << e.what() << std::endl;
+        std::cerr << "Syntax Error on line number " << e.getLineNum() << ": " << e.what()
+                  << std::endl;
         std::exit(65);  // Exit with error code 65 for syntax errors
+    }
+    catch (const EvaluatorError& e)
+    {
+        std::cerr << "Runtime Error: " << e.what() << std::endl;
+        std::exit(70);
     }
 
     return 0;

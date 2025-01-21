@@ -2,12 +2,14 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 
 #include "../Expression/Expression.h"
 #include "../Function/Callable.h"
 #include "../Function/LoxFunction.h"
 #include "../Operators/Operators.h"
 #include "../Statement/Statement.h"
+#include "EvaluatorError.h"
 
 void Evaluator::visitPrintStatement(const PrintStatement& statement, Environment* env)
 {
@@ -227,23 +229,17 @@ void Evaluator::handleBangOperator()
         result = std::make_shared<Result<bool>>(true);
         return;
     }
-
-    std::cerr << "Error: Operand of '!' must be a boolean or nil" << std::endl;
-    std::exit(70);
+    throw EvaluatorError("Operand of '!' must be a boolean or nil.");
 }
 
 void Evaluator::handleMinusOperator()
 {
     auto numberResult = dynamic_cast<Result<double>*>(result.get());
-    if (numberResult)
+    if (!numberResult)
     {
-        result = std::make_shared<Result<double>>(-numberResult->getValue());
+        throw EvaluatorError("Operand of '-' must be a number.");
     }
-    else
-    {
-        std::cerr << "Error: Operand must be a number" << std::endl;
-        std::exit(70);
-    }
+    result = std::make_shared<Result<double>>(-numberResult->getValue());
 }
 
 void Evaluator::visitUnaryExpression(const UnaryExpression& unary, Environment* env)
@@ -262,8 +258,7 @@ void Evaluator::visitUnaryExpression(const UnaryExpression& unary, Environment* 
     }
     else
     {
-        std::cerr << "Error: Unknown unary operator '" << op << "'" << std::endl;
-        std::exit(70);
+        throw EvaluatorError("Unkown unary operator " + op);
     }
 }
 
@@ -295,8 +290,7 @@ void Evaluator::handleNumbersOperation(const std::shared_ptr<Result<double>>& le
         return;
     }
 
-    std::cerr << "Error: Unsupported operator '" << op << "' for numbers" << std::endl;
-    std::exit(70);
+    throw EvaluatorError("Unsupported operator " + op + " for numbers");
 }
 
 void Evaluator::handleStringsOperation(const std::shared_ptr<Result<std::string>>& leftResult,
@@ -321,8 +315,7 @@ void Evaluator::handleStringsOperation(const std::shared_ptr<Result<std::string>
         return;
     }
 
-    std::cerr << "Error: Unsupported operator '" << op << "' for strings" << std::endl;
-    std::exit(70);
+    throw EvaluatorError("Unsupported operator " + op + " for strings");
 }
 
 void Evaluator::handleBoolsOperation(const std::shared_ptr<Result<bool>>& leftResult,
@@ -336,9 +329,7 @@ void Evaluator::handleBoolsOperation(const std::shared_ptr<Result<bool>>& leftRe
             leftResult, rightResult, "Operands must be booleans", eqIt->second);
         return;
     }
-
-    std::cerr << "Error: Unsupported operator '" << op << "' for booleans" << std::endl;
-    std::exit(70);
+    throw EvaluatorError("Unsupported operator " + op + " for booleans");
 }
 
 void Evaluator::handleIncompatibleTypes(const std::string& op)
@@ -348,9 +339,7 @@ void Evaluator::handleIncompatibleTypes(const std::string& op)
         result = std::make_unique<Result<bool>>(op == "!=");
         return;
     }
-
-    std::cerr << "Error: Incompatible types for operator '" << op << "'" << std::endl;
-    std::exit(70);
+    throw EvaluatorError("Incompatible types for operator " + op);
 }
 
 void Evaluator::visitBinaryExpression(const BinaryExpression& binary, Environment* env)
@@ -410,7 +399,7 @@ void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env
     if (!callee)
     {
         // throw std::runtime_error("Attempt to call a non-function object.");
-        std::exit(70);
+        throw EvaluatorError("Attempt to call a non-function object");
     }
 
     std::vector<std::shared_ptr<ResultBase>> arguments;
@@ -423,7 +412,7 @@ void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env
     if (arguments.size() != callee->arity())
     {
         // throw std::runtime_error("Incorrect number of arguments to function.");
-        std::exit(70);
+        throw EvaluatorError("Incorrect number of arguments to function.");
     }
 
     result = callee->call(*this, arguments);

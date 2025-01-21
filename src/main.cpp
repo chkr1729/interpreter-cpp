@@ -43,12 +43,6 @@ int main(int argc, char* argv[])
     // Step 2: Parse the tokens into statements
     Parser parser(std::move(tokens));
     auto   statements = parser.parse();
-    // If parsing failed, we exit
-    int parserRetVal = parser.getRetVal();
-    if (parserRetVal)
-    {
-        return parserRetVal;
-    }
 
     // Step 3: Handle commands
     if (command == "parse")

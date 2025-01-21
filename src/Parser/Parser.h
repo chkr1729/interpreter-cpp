@@ -19,14 +19,10 @@ class Parser
     // Main parse method: returns a list of parsed statements
     std::vector<std::unique_ptr<Statement>> parse();
 
-    int getRetVal() const { return retVal; }
-
    private:
     std::vector<Token> tokens;
 
     size_t current = 0;
-
-    int retVal = 0;
 
     // Recursive descent parsing methods for statements
     std::unique_ptr<Statement>                   parseStatement();

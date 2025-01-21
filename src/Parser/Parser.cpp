@@ -358,25 +358,21 @@ std::unique_ptr<Expression> Parser::parseEquality()
     return parseBinary([this]() { return parseComparison(); }, {"==", "!="});
 }
 
-// Parse a comparison (handles >, <, >=, <=)
 std::unique_ptr<Expression> Parser::parseComparison()
 {
     return parseBinary([this]() { return parseTerm(); }, {">", "<", ">=", "<="});
 }
 
-// Parse a term (handles + and -)
 std::unique_ptr<Expression> Parser::parseTerm()
 {
     return parseBinary([this]() { return parseFactor(); }, {"+", "-"});
 }
 
-// Parse a factor (handles * and /)
 std::unique_ptr<Expression> Parser::parseFactor()
 {
     return parseBinary([this]() { return parseUnary(); }, {"*", "/"});
 }
 
-// Parse unary operators
 std::unique_ptr<Expression> Parser::parseUnary()
 {
     if (match({"!", "-"}))
@@ -485,7 +481,6 @@ std::unique_ptr<Expression> Parser::parseCall(std::unique_ptr<Expression> callee
     return callee;
 }
 
-// Helper function for parsing binary expressions
 std::unique_ptr<Expression> Parser::parseBinary(
     std::function<std::unique_ptr<Expression>()> subParser,
     const std::vector<std::string>&              operators)
@@ -507,7 +502,7 @@ std::unique_ptr<Expression> Parser::parseBinary(
 Token Parser::advance()
 {
     if (!isAtEnd()) current++;
-    return tokens[current - 1];  // Return the previous token
+    return tokens[current - 1];
 }
 
 // Helper method: Returns the current token without advancing

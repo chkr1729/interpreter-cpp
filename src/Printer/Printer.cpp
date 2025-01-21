@@ -1,17 +1,5 @@
 #include "Printer.h"
 
-#include "../Statement/Statement.h"
-
-void Printer::visitExpressionStatement(const ExpressionStatement& statement, Environment* env)
-{
-    auto expr = statement.getExpression();
-    if (expr)
-    {
-        expr->accept(*this, env);
-        std::cout << std::endl;
-    }
-}
-
 void Printer::visitLiteralExpression(const LiteralExpression& expr, Environment* env)
 {
     std::cout << expr.getValue();

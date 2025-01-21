@@ -53,7 +53,11 @@ int main(int argc, char* argv[])
             Printer printer;
             for (const auto& statement : statements)
             {
-                statement->accept(printer);
+                auto exprStmt = dynamic_cast<ExpressionStatement*>(statement.get());
+                if (exprStmt)
+                {
+                    exprStmt->getExpression()->accept(printer);
+                }
             }
             return 0;
         }

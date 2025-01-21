@@ -398,7 +398,6 @@ void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env
 
     if (!callee)
     {
-        // throw std::runtime_error("Attempt to call a non-function object.");
         throw EvaluatorError("Attempt to call a non-function object");
     }
 
@@ -411,7 +410,6 @@ void Evaluator::visitCallExpression(const CallExpression& expr, Environment* env
 
     if (arguments.size() != callee->arity())
     {
-        // throw std::runtime_error("Incorrect number of arguments to function.");
         throw EvaluatorError("Incorrect number of arguments to function.");
     }
 
